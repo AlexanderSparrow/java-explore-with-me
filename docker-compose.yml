@@ -1,14 +1,48 @@
 services:
   stats-server:
+    build: stats-service
+    image: stats-service-image
+    container_name: stats-service-container
     ports:
       - "9090:9090"
+    depends_on:
+      - stats-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
+      - SPRING_DATASOURCE_USERNAME=stats_admin
+      - SPRING_DATASOURCE_PASSWORD=u$ErSP@$$
+      - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
 
   stats-db:
     image: postgres:16.1
+    container_name: stats-db-container
+    ports:
+      - "9542:5432"
+    environment:
+      - POSTGRES_PASSWORD=u$ErSP@$$
+      - POSTGRES_USER=stats_admin
+      - POSTGRES_DB=stats
 
-  ewm-service:
+  main-service:
+    build: main-service
+    image: main-service-image
+    container_name: main-service-container
     ports:
       - "8080:8080"
+    depends_on:
+      - ewm-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://evm-db:5432/ewm
+      - SPRING_DATASOURCE_USERNAME=ewm_admin
+      - SPRING_DATASOURCE_PASSWORD=u$ErSP@$$
+      - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
 
-  ewm-db:
+  main-db:
     image: postgres:16.1
+    container_name: ewm-db-container
+    ports:
+      - "8542:5432"
+    environment:
+      - POSTGRES_PASSWORD=u$ErSP@$$
+      - POSTGRES_USER=ewm_admin
+      - POSTGRES_DB=ewm
