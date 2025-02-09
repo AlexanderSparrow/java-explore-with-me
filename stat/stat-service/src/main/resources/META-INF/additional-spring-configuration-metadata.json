@@ -1,7 +1,7 @@
 {
   "properties": [
     {
-      "name": "stats-service.url",
+      "name": "stat-service.url",
       "type": "java.lang.String",
       "description": "Description for stats-service.url."
   }
