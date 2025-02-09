@@ -4,7 +4,7 @@ services:
       context: ./stat/stat-service
       dockerfile: Dockerfile
     image: stat-service-image
-    container_name: stats-service-container
+    container_name: stat-service-container
     ports:
       - "9090:9090"
     depends_on:

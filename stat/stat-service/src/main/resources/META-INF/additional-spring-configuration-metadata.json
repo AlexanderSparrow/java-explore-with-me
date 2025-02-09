@@ -3,6 +3,6 @@
     {
       "name": "stat-service.url",
       "type": "java.lang.String",
-      "description": "Description for stats-service.url."
+      "description": "Description for stat-service.url."
   }
 ] }
