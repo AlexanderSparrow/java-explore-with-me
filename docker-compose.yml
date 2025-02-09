@@ -33,7 +33,7 @@ services:
     image: ewm-service-image
     container_name: ewm-service-container
     ports:
-      - "8081:8080"
+      - "8080:8080"
     depends_on:
       - ewm-db
     environment:
