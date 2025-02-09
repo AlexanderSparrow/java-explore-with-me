@@ -1,7 +1,9 @@
 services:
   stats-server:
-    build: stat-service
-    image: stats-service-image
+    build:
+      context: ./stat/stat-service
+      dockerfile: Dockerfile
+    image: stat-service-image
     container_name: stats-service-container
     ports:
       - "9090:9090"
@@ -10,8 +12,9 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
       - SPRING_DATASOURCE_USERNAME=stats_admin
-      - SPRING_DATASOURCE_PASSWORD=u$ErSP@$$
+      - SPRING_DATASOURCE_PASSWORD=u\$ErSP@\$\$
       - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
+
 
   stats-db:
     image: postgres:16.1
@@ -24,18 +27,21 @@ services:
       - POSTGRES_DB=stats
 
   ewm-service:
-    build: main-service
+    build:
+      context: ./main-service
+      dockerfile: Dockerfile
     image: ewm-service-image
     container_name: ewm-service-container
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       - ewm-db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
       - SPRING_DATASOURCE_USERNAME=ewm_admin
-      - SPRING_DATASOURCE_PASSWORD=u$ErSP@$$
+      - SPRING_DATASOURCE_PASSWORD=u\$ErSP@\$\$
       - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
+
 
   ewm-db:
     image: postgres:16.1
