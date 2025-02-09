@@ -23,21 +23,21 @@ services:
       - POSTGRES_USER=stats_admin
       - POSTGRES_DB=stats
 
-  main-service:
-    build: main-service
-    image: main-service-image
-    container_name: main-service-container
+  ewm-service:
+    build: ewm-service
+    image: ewm-service-image
+    container_name: ewm-service-container
     ports:
       - "8080:8080"
     depends_on:
       - ewm-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://evm-db:5432/ewm
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
       - SPRING_DATASOURCE_USERNAME=ewm_admin
       - SPRING_DATASOURCE_PASSWORD=u$ErSP@$$
       - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
 
-  main-db:
+  ewm-db:
     image: postgres:16.1
     container_name: ewm-db-container
     ports:
