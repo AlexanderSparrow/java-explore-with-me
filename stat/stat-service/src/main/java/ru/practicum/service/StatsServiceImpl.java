@@ -1,8 +1,11 @@
-package ru.practicum;
+package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.EndpointHit;
+import ru.practicum.ViewStats;
+import ru.practicum.repository.StatsRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +25,9 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        return statsRepository.getStats(start, end, uris, unique);
+        log.info("Получение статистики с параметрами: start = {}, end = {}, uris = {}, unique = {}", start, end, uris, unique);
+        List<ViewStats> result = statsRepository.getStats(start, end, uris, unique);
+        log.info("Результат: {}", result);
+        return result;
     }
 }

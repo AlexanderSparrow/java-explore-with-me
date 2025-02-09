@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.controller;
 
 
 import lombok.RequiredArgsConstructor;
@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.EndpointHit;
+import ru.practicum.ViewStats;
+import ru.practicum.service.StatsService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,7 +35,7 @@ public class StatsController {
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) {
         log.info("Получен запрос статистики по посещениям.");
-        log.info("Запрос: start={}, end={}, uris={}, unique={}", start, end, uris, unique);
+        log.info("Запрос: start = {}, end = {}, uris = {}, unique = {}", start, end, uris, unique);
         // Преобразование String → LocalDateTime
         LocalDateTime startDateTime = LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         LocalDateTime endDateTime = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
