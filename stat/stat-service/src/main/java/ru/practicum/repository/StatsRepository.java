@@ -4,16 +4,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import ru.practicum.EndpointHit;
-import ru.practicum.ViewStats;
-
+import ru.practicum.dto.ViewStats;
+import ru.practicum.model.EndpointHit;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
 
-    @Query("SELECT new ru.practicum.ViewStats(e.app, e.uri, " +
+    @Query("SELECT new ru.practicum.dto.ViewStats(e.app, e.uri, " +
             "CAST(CASE WHEN :unique = true THEN COUNT(DISTINCT e.ip) ELSE COUNT(e) END AS long)) " +
             "FROM EndpointHit e " +
             "WHERE e.timestamp BETWEEN :start AND :end " +

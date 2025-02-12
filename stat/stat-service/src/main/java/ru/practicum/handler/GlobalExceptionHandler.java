@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleException(final Exception e) {
-        log.error("400 {}", e.getMessage(), e);
+        log.error("Response Status 400: {}", e.getMessage(), e);
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         return new ApiError(HttpStatus.BAD_REQUEST, "Error: ", e.getMessage(), sw.toString());

@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import ru.practicum.dto.EndpointHitDto;
+import ru.practicum.dto.ViewStats;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class StatsClient {
         this.restClient = RestClient.builder().baseUrl(statsServiceUrl).build();
     }
 
-    public void sendHit(EndpointHit hit) {
+    public void sendHit(EndpointHitDto hit) {
         restClient.post()
                 .uri("/hit")
                 .body(hit)

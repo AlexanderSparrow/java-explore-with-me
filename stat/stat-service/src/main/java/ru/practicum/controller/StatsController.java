@@ -6,8 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.EndpointHit;
-import ru.practicum.ViewStats;
+import ru.practicum.dto.EndpointHitDto;
+import ru.practicum.dto.ViewStats;
 import ru.practicum.service.StatsService;
 
 import java.time.LocalDateTime;
@@ -22,10 +22,9 @@ public class StatsController {
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
-    public void saveHit(@RequestBody EndpointHit hit) {
-        log.info("Получен запрос на сохранение информации о том, что к эндпоинту был запрос");
-        hit.setTimestamp(LocalDateTime.now());
-        statsService.saveHit(hit);
+    public void saveHit(@RequestBody EndpointHitDto hitDto) {
+        log.info("Получен запрос на сохранение информации о запросе: {}", hitDto);
+        statsService.saveHit(hitDto);
     }
 
     @GetMapping("/stats")
@@ -36,7 +35,6 @@ public class StatsController {
             @RequestParam(defaultValue = "false") boolean unique) {
         log.info("Получен запрос статистики по посещениям.");
         log.info("Запрос: start = {}, end = {}, uris = {}, unique = {}", start, end, uris, unique);
-        // Преобразование String → LocalDateTime
         LocalDateTime startDateTime = LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         LocalDateTime endDateTime = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 

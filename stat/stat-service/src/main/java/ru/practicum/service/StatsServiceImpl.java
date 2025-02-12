@@ -3,8 +3,10 @@ package ru.practicum.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.EndpointHit;
-import ru.practicum.ViewStats;
+import ru.practicum.dto.EndpointHitDto;
+import ru.practicum.mapper.EndpointHitMapper;
+import ru.practicum.model.EndpointHit;
+import ru.practicum.dto.ViewStats;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.repository.StatsRepository;
 
@@ -17,9 +19,11 @@ import java.util.List;
 public class StatsServiceImpl implements StatsService {
 
     private final StatsRepository statsRepository;
+    private final EndpointHitMapper mapper;
 
     @Override
-    public void saveHit(EndpointHit hit) {
+    public void saveHit(EndpointHitDto hitDto) {
+        EndpointHit hit = mapper.toEntity(hitDto);
         statsRepository.save(hit);
         log.info("Сохранили запрос {}", hit);
     }
