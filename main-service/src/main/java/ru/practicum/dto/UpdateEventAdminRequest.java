@@ -6,7 +6,7 @@ import ru.practicum.enums.AdminStateAction;
 
 import java.time.LocalDateTime;
 
-public class UpdateEventUserRequest {
+public class UpdateEventAdminRequest {
     @Size(min = 20, max = 2000)
     private String annotation;
 

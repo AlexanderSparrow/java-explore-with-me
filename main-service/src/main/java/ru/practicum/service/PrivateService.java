@@ -13,7 +13,7 @@ public class PrivateService {
         return new EventFullDto();
     }
 
-    public EventFullDto updateEvent(Long userId, Long eventId, EventUpdateDto eventUpdateDto) {
+    public EventFullDto updateEvent(Long userId, Long eventId, EventFullDto eventFullDto) {
         // Заглушка
         return new EventFullDto();
     }
