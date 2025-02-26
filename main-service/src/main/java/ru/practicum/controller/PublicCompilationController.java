@@ -1,24 +1,34 @@
 package ru.practicum.controller;
 
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.CompilationDto;
-import ru.practicum.service.PublicService;
+import ru.practicum.service.CompilationService;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/compilations")
 @RequiredArgsConstructor
+@Slf4j
 public class PublicCompilationController {
 
-    private final PublicService publicService;
+    private final CompilationService compilationService;
 
     @GetMapping
-    public List<CompilationDto> getCompilations(@RequestParam(required = false) Boolean pinned) {
-        return publicService.getCompilations(pinned);
+    public List<CompilationDto> getCompilations(
+            @RequestParam(required = false) Boolean pinned,
+            @RequestParam(defaultValue = "0") @Min(0) int from,
+            @RequestParam(defaultValue = "10") @Min(1) int size) {
+        log.info("Получение списка подборок с параметрами: pinned={}, from={}, size={}", pinned, from, size);
+        return compilationService.getCompilations(pinned, from, size);
+    }
+
+    @GetMapping("/{compId}")
+    public CompilationDto getCompilation(@PathVariable Long compId) {
+        log.info("Получение подборки по id={}", compId);
+        return compilationService.getCompilationById(compId);
     }
 }

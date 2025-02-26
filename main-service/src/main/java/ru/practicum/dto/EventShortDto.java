@@ -31,8 +31,8 @@ public class EventShortDto {
     private String title;
 
     @PositiveOrZero
-    private Integer confirmedRequests;
+    private Integer confirmedRequests = 0;
 
     @PositiveOrZero
-    private Integer views;
+    private Integer views = 0;
 }

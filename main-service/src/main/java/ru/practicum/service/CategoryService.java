@@ -33,31 +33,31 @@ public class CategoryService {
     @Transactional
     public CategoryDto getCategoryById(Long catId) {
         Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
+                .orElseThrow(() -> new NotFoundException("Категория id=" + catId + " не найдена."));
         return categoryMapper.toDto(category);
     }
 
     @Transactional
     public CategoryDto addCategory(NewCategoryDto dto) {
         if (categoryRepository.existsByName(dto.getName())) {
-            throw new ConflictException("Category name must be unique");
+            throw new ConflictException("Название категории должно быть уникальным.");
         }
         Category category = categoryMapper.toCategory(dto);
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 
     @Transactional
-    public void deleteCategory(Long id) {
-        if (!categoryRepository.existsById(id)) {
-            throw new NotFoundException("Category with id=" + id + " was not found");
+    public void deleteCategory(Long catId) {
+        if (!categoryRepository.existsById(catId)) {
+            throw new NotFoundException("Категория id=" + catId + " не найдена.");
         }
-        categoryRepository.deleteById(id);
+        categoryRepository.deleteById(catId);
     }
 
     @Transactional
-    public CategoryDto updateCategory(Long id, CategoryDto dto) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Category with id=" + id + " was not found"));
+    public CategoryDto updateCategory(Long catId, CategoryDto dto) {
+        Category category = categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundException("Категория id=" + catId + " не найдена."));
         if (!category.getName().equals(dto.getName()) && categoryRepository.existsByName(dto.getName())) {
             throw new ConflictException("Category name must be unique");
         }

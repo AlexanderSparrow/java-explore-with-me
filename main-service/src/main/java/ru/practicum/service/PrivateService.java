@@ -1,16 +1,29 @@
 package ru.practicum.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.*;
+import ru.practicum.mapper.EventMapper;
+import ru.practicum.model.Event;
+import ru.practicum.repository.EventRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PrivateService {
 
+    private final EventRepository eventRepository;
+    private final UserService userService;
+    private final EventMapper eventMapper;
+
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
-        // Заглушка
-        return new EventFullDto();
+        Event event = eventMapper.toEntity(newEventDto);
+        event.setInitiatorId(userId);
+        event.setCreatedOn(LocalDateTime.now());
+        eventRepository.save(event);
+        return eventMapper.toEventFullDto(event);
     }
 
     public EventFullDto updateEvent(Long userId, Long eventId, EventFullDto eventFullDto) {

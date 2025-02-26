@@ -2,10 +2,12 @@ package ru.practicum.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 import ru.practicum.enums.AdminStateAction;
 
 import java.time.LocalDateTime;
 
+@Data
 public class UpdateEventUserRequest {
     @Size(min = 20, max = 2000)
     private String annotation;

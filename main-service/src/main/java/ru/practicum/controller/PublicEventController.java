@@ -1,37 +1,71 @@
 package ru.practicum.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
-import ru.practicum.service.PublicService;
+import ru.practicum.exception.BadRequestException;
+import ru.practicum.service.PublicEventService;
+import ru.practicum.service.StatsService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/events")
 @RequiredArgsConstructor
 public class PublicEventController {
 
-    private final PublicService publicService;
+    private final PublicEventService eventService;
+    private final StatsService statsService;
 
     @GetMapping
-    public List<EventShortDto> getEvents(
-            @RequestParam(required = false) String text,
+    public ResponseEntity<List<EventShortDto>> getEvents(
+            @RequestParam(required = false, defaultValue = "") String text,
             @RequestParam(required = false) List<Long> categories,
-            @RequestParam(required = false) Boolean paid,
-            @RequestParam(required = false) String rangeStart,
-            @RequestParam(required = false) String rangeEnd,
-            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
-            @RequestParam(defaultValue = "eventDate") String sort,
-            @RequestParam(defaultValue = "0") int from,
-            @RequestParam(defaultValue = "10") int size) {
-        return publicService.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+            @RequestParam(required = false, value = "paid") Boolean paid,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+            @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,
+            @RequestParam(required = false) String sort,
+            @RequestParam(value = "from", defaultValue = "0") Integer from,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            HttpServletRequest request) {
+
+        log.info("Запрос событий: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}",
+                text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
+
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
+            throw new BadRequestException("Ошибка: начальная дата не может быть позже конечной.");
+        }
+
+        List<EventShortDto> events = eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+
+        if (!sort.equals("EVENT_DATE") && !sort.equals("VIEWS")) {
+            throw new BadRequestException("Ошибка: сортировка должна быть EVENT_DATE или VIEWS.");
+        }
+
+        // Логируем в сервис статистики
+        statsService.saveHit((EndpointHitDto) request);
+
+        return ResponseEntity.ok(events);
     }
 
     @GetMapping("/{id}")
-    public EventFullDto getEvent(@PathVariable Long id) {
-        return publicService.getEventById(id);
+    public ResponseEntity<EventFullDto> getEvent(@PathVariable Long id, HttpServletRequest request) {
+        log.info("Запрос события с идентификатором {}", id);
+
+        EventFullDto event = eventService.getPublicEventById(id);
+
+        // Логируем в сервис статистики
+       statsService.saveHit((EndpointHitDto) request);
+
+        return ResponseEntity.ok(event);
     }
 }
-
