@@ -2,6 +2,7 @@ package ru.practicum.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
@@ -9,6 +10,7 @@ import ru.practicum.exception.AppException;
 import ru.practicum.model.ApiError;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,22 +19,23 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
-    public ApiError handleAppException(AppException e) {
-        return buildErrorResponse(
+    public ResponseEntity<ApiError> handleAppException(AppException e) {
+        ApiError apiError = buildErrorResponse(
                 e,
                 e.getStatus(),
                 e.getMessage(),
                 "Application-specific exception"
         );
+        return ResponseEntity.status(e.getStatus()).body(apiError);
     }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ApiError handleResponseStatusException(ResponseStatusException e) {
-        HttpStatus status = HttpStatus.resolve(e.getStatusCode().value());
+        HttpStatus status = HttpStatus.valueOf(e.getStatusCode().value());
         return buildErrorResponse(
                 e,
-                status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR,
-                e.getReason() != null ? e.getReason() : "No reason provided",
+                status,
+                e.getReason() != null ? e.getReason() : "Unexpected error",
                 "Response status exception"
         );
     }
@@ -49,8 +52,13 @@ public class GlobalExceptionHandler {
 
     private ApiError buildErrorResponse(Exception e, HttpStatus status, String message, String reason) {
         log.error("Response Status {}: {}, Reason: {}", status.value(), message, reason, e);
+
+        List<String> errorStack = e.getStackTrace() != null ?
+                Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).toList() :
+                Collections.emptyList();
+
         return new ApiError(
-                e.getStackTrace() != null ? List.of(e.getStackTrace()[0].toString()) : Collections.emptyList(),
+                errorStack,
                 message,
                 reason,
                 status,

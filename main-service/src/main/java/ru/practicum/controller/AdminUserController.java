@@ -1,5 +1,6 @@
 package ru.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -42,7 +43,7 @@ public class AdminUserController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto registerUser(@RequestBody NewUserRequest newUserRequest) {
+    public UserDto registerUser(@Valid @RequestBody NewUserRequest newUserRequest) {
         log.info("Получен запрос на добавление пользователя {}.", newUserRequest);
         return userService.registerUser(newUserRequest);
     }
