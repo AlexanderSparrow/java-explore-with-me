@@ -5,21 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatsClient;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
-import ru.practicum.dto.UpdateEventAdminRequest;
-import ru.practicum.enums.EventState;
-import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,8 +48,7 @@ public class PublicEventService {
 
     public EventFullDto getPublicEventById(Long eventId) {
         Event event = eventRepository.findPublishedEventById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено."));
-
+                .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
         return eventMapper.toEventFullDto(event);
     }
 
@@ -58,49 +56,6 @@ public class PublicEventService {
         return "VIEWS".equalsIgnoreCase(sort) ? Sort.by(Sort.Direction.DESC, "views") : Sort.by(Sort.Direction.ASC, "eventDate");
     }
 
-
-    public List<EventFullDto> getEvents(List<Long> users, List<EventState> states, List<Long> categories,
-                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
-        List<Event> events = eventRepository.findByInitiatorIdInAndStateInAndCategoryIdInAndEventDateBetween(
-                users, states, categories, rangeStart, rangeEnd
-        );
-        return eventMapper.toEventFullDtoList(events);
-    }
-
-    public EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest updateRequest) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Событие не найдено."));
-
-        // Применяем обновления
-        event.setTitle(updateRequest.getTitle());
-        event.setAnnotation(updateRequest.getAnnotation());  // добавляем аннотацию
-        event.setDescription(updateRequest.getDescription());
-        event.setCategoryId(updateRequest.getCategory());
-        event.setEventDate(updateRequest.getEventDate());
-        event.setLocation(updateRequest.getLocation());
-        event.setPaid(updateRequest.getPaid());
-        event.setParticipantLimit(updateRequest.getParticipantLimit());
-
-        // Обработка нового поля status
-        if (updateRequest.getStatus() != null) {
-            // Обновление состояния на основе status
-            switch (updateRequest.getStatus()) {
-                case PUBLISH_EVENT:
-                    event.setState(EventState.PUBLISHED);
-                    break;
-                case REJECT_EVENT:
-                    event.setState(EventState.CANCELED);
-                    break;
-                default:
-                    event.setState(EventState.PENDING);
-                    break;
-            }
-        }
-
-        event = eventRepository.save(event);
-
-        return eventMapper.toEventFullDto(event);
-    }
 
     public void trackEventView(Long eventId, String ip) {
         EndpointHitDto hit = new EndpointHitDto("ExploreWithMe", "/events/" + eventId, ip, LocalDateTime.now());

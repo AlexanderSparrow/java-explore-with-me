@@ -3,7 +3,7 @@ package ru.practicum.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.practicum.enums.AdminStateAction;
+import ru.practicum.enums.StateAction;
 
 import java.time.LocalDateTime;
 
@@ -26,7 +26,7 @@ public class UpdateEventAdminRequest {
 
     private Integer participantLimit;
 
-    private AdminStateAction status;
+    private StateAction stateAction;
 
     @Size(min = 3, max = 120)
     private String title;

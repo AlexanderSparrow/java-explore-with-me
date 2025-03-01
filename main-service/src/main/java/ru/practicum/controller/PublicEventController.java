@@ -4,12 +4,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
-import ru.practicum.exception.BadRequestException;
+import ru.practicum.exception.AppException;
 import ru.practicum.service.PublicEventService;
 import ru.practicum.service.StatsService;
 
@@ -42,13 +43,13 @@ public class PublicEventController {
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
 
         if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
-            throw new BadRequestException("Ошибка: начальная дата не может быть позже конечной.");
+            throw new AppException("Ошибка: начальная дата не может быть позже конечной.", HttpStatus.BAD_REQUEST);
         }
 
         List<EventShortDto> events = eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
         if (!sort.equals("EVENT_DATE") && !sort.equals("VIEWS")) {
-            throw new BadRequestException("Ошибка: сортировка должна быть EVENT_DATE или VIEWS.");
+            throw new AppException("Ошибка: сортировка должна быть EVENT_DATE или VIEWS.", HttpStatus.BAD_REQUEST);
         }
 
         // Логируем в сервис статистики
@@ -64,7 +65,7 @@ public class PublicEventController {
         EventFullDto event = eventService.getPublicEventById(id);
 
         // Логируем в сервис статистики
-       statsService.saveHit((EndpointHitDto) request);
+        statsService.saveHit((EndpointHitDto) request);
 
         return ResponseEntity.ok(event);
     }

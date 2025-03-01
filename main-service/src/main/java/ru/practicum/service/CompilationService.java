@@ -6,12 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.CompilationDto;
 import ru.practicum.dto.NewCompilationDto;
 import ru.practicum.dto.UpdateCompilationRequest;
-import ru.practicum.exception.DuplicatedDataException;
-import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.AppException;
 import ru.practicum.mapper.CompilationMapper;
 import ru.practicum.model.Compilation;
 import ru.practicum.model.Event;
@@ -38,9 +38,8 @@ public class CompilationService {
      */
     @Transactional
     public CompilationDto saveCompilation(NewCompilationDto newCompilationDto) {
-        // Проверка уникальности названия
         if (compilationRepository.existsByTitle(newCompilationDto.getTitle())) {
-            throw new DuplicatedDataException("Подборка с названием ='" + newCompilationDto.getTitle() + "' уже существует.");
+            throw new AppException("Подборка с названием ='" + newCompilationDto.getTitle() + "' уже существует.", HttpStatus.CONFLICT);
         }
 
         // Загружаем события по ID
@@ -55,6 +54,7 @@ public class CompilationService {
                 .build();
 
         Compilation savedCompilation = compilationRepository.save(compilation);
+        log.info("Сохранили подборку: {}.", savedCompilation);
         return compilationMapper.toDto(savedCompilation);
     }
 
@@ -78,7 +78,8 @@ public class CompilationService {
 
     public CompilationDto getCompilationById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Подборка с id=" + compId + " не найдена."));
+                .orElseThrow(() -> new AppException("Подборка с id=" + compId + " не найдена.", HttpStatus.NOT_FOUND));
+        log.info("Возвращаем подборку: {}.", compilation);
         return compilationMapper.toDto(compilation);
     }
 
@@ -88,10 +89,10 @@ public class CompilationService {
     @Transactional
     public void deleteCompilation(Long compId) {
         if (!compilationRepository.existsById(compId)) {
-            throw new NotFoundException("Compilation with id=" + compId + " was not found");
+            throw new AppException("Подборка с id=" + compId + " не найдена.", HttpStatus.NOT_FOUND);
         }
         compilationRepository.deleteById(compId);
-        log.info("Compilation with id={} deleted", compId);
+        log.info("Подборка с id={} удалена.", compId);
     }
 
     /**
@@ -100,7 +101,7 @@ public class CompilationService {
     @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
+                .orElseThrow(() -> new AppException("Подборка с id=" + compId + " не найдена.", HttpStatus.NOT_FOUND));
 
         if (request.getTitle() != null) {
             compilation.setTitle(request.getTitle());
@@ -114,7 +115,7 @@ public class CompilationService {
         }
 
         Compilation updatedCompilation = compilationRepository.save(compilation);
-        log.info("Compilation with id={} updated", compId);
+        log.info("Подборка с id={} обновлена.", compId);
         return compilationMapper.toDto(updatedCompilation);
     }
 }

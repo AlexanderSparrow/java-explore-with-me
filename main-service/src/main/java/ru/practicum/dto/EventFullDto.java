@@ -29,7 +29,7 @@ public class EventFullDto extends EventShortDto {
     private LocalDateTime publishedOn;
 
     @NotNull
-    private Boolean requestModeration = true;
+    private Boolean requestModeration;
 
     @NotNull
     private EventState state;

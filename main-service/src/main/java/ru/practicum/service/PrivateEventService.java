@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PrivateService {
+public class PrivateEventService {
 
     private final EventRepository eventRepository;
     private final UserService userService;
@@ -23,7 +23,9 @@ public class PrivateService {
         event.setInitiatorId(userId);
         event.setCreatedOn(LocalDateTime.now());
         eventRepository.save(event);
-        return eventMapper.toEventFullDto(event);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
+        eventFullDto.setRequestModeration(newEventDto.getRequestModeration());
+        return eventFullDto;
     }
 
     public EventFullDto updateEvent(Long userId, Long eventId, EventFullDto eventFullDto) {

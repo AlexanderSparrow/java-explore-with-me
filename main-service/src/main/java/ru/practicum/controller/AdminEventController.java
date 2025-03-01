@@ -1,24 +1,38 @@
 package ru.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.enums.EventState;
-import ru.practicum.service.PublicEventService;
+import ru.practicum.service.AdminEventService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/admin/events")
 @RequiredArgsConstructor
 public class AdminEventController {
 
-    private final PublicEventService eventService;
+    private final AdminEventService adminEventService;
 
+    /**
+     * Получение событий администратором
+     *
+     * @param users      Список ID пользователей (опционально)
+     * @param states     список ID статусов (опционально)
+     * @param categories список категорий (опционально)
+     * @param rangeStart начало диапазона дат
+     * @param rangeEnd   конец диапазона дат
+     * @param from       Количество элементов, которые нужно пропустить
+     * @param size       Количество элементов в ответе
+     * @return Список событий по параметрам
+     */
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
             @RequestParam(required = false) List<Long> users,
@@ -28,17 +42,27 @@ public class AdminEventController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") int from,
             @RequestParam(defaultValue = "10") int size) {
-
-        List<EventFullDto> events = eventService.getEvents(users, states, categories, rangeStart, rangeEnd, from, size);
+        log.info("Получен запрос событий пользователей {} со статусами {} из категорий {} в диапазоне дат с:{} по: {} " +
+                "начиная с номера: {}, всего в количестве: {}", users, states, categories, rangeStart, rangeEnd, from, size);
+        List<EventFullDto> events = adminEventService.getEvents(users, states, categories, rangeStart, rangeEnd, from, size);
+        log.info("Список событий: {}.", events);
         return ResponseEntity.ok(events);
     }
 
+    /**
+     * Редактирование события администратором
+     *
+     * @param eventId       ID события
+     * @param updateRequest Запрос на обновление
+     * @return Обновленное событие
+     */
     @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEvent(
             @PathVariable Long eventId,
             @RequestBody UpdateEventAdminRequest updateRequest) {
-
-        EventFullDto updatedEvent = eventService.updateEventAdmin(eventId, updateRequest);
+        log.info("Получен запрос на изменение события с id: {} на {}", eventId, updateRequest);
+        EventFullDto updatedEvent = adminEventService.updateEvent(eventId, updateRequest);
+        log.info("Обновленное событие: {}", updatedEvent);
         return ResponseEntity.ok(updatedEvent);
     }
 }

@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.CategoryDto;
 import ru.practicum.dto.NewCategoryDto;
 import ru.practicum.exception.AppException;
-import ru.practicum.exception.ConflictException;
-import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.model.Category;
 import ru.practicum.repository.CategoryRepository;
@@ -35,6 +33,7 @@ public class CategoryService {
         log.info("Найдены категории: {} ", categories);
         return categories;
     }
+
     @Transactional
     public CategoryDto getCategoryById(Long catId) {
         Category category = categoryRepository.findById(catId)
@@ -46,7 +45,7 @@ public class CategoryService {
     @Transactional
     public CategoryDto addCategory(NewCategoryDto dto) {
         if (categoryRepository.existsByName(dto.getName())) {
-            throw new ConflictException("Название категории должно быть уникальным.");
+            throw new AppException("Название категории должно быть уникальным.", HttpStatus.CONFLICT);
         }
         Category category = categoryMapper.toCategory(dto);
         log.info("Сохраняем категорию: {}", category);
@@ -56,7 +55,7 @@ public class CategoryService {
     @Transactional
     public void deleteCategory(Long catId) {
         if (!categoryRepository.existsById(catId)) {
-            throw new NotFoundException("Категория id=" + catId + " не найдена.");
+            throw new AppException("Категория id=" + catId + " не найдена.", HttpStatus.NOT_FOUND);
         }
         log.info("Удаляем категорию: {}", catId);
         categoryRepository.deleteById(catId);
@@ -65,9 +64,9 @@ public class CategoryService {
     @Transactional
     public CategoryDto updateCategory(Long catId, CategoryDto dto) {
         Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException("Категория id=" + catId + " не найдена."));
+                .orElseThrow(() -> new AppException("Категория id=" + catId + " не найдена.", HttpStatus.NOT_FOUND));
         if (!category.getName().equals(dto.getName()) && categoryRepository.existsByName(dto.getName())) {
-            throw new ConflictException("Category name must be unique");
+            throw new AppException("Название категории должно быть уникальным.", HttpStatus.CONFLICT);
         }
         category.setName(dto.getName());
         log.info("Категория изменена на: {}", category);

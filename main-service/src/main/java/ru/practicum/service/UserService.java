@@ -27,7 +27,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         if (from < 0 || size <= 0) {
-            throw new AppException("Invalid pagination parameters", HttpStatus.BAD_REQUEST);
+            throw new AppException("Некорректные значения параметров пагинации.", HttpStatus.BAD_REQUEST);
         }
 
         List<User> users;
@@ -49,7 +49,7 @@ public class UserService {
             throw new AppException("Field: name. Error: must not be blank. Value: null", HttpStatus.BAD_REQUEST);
         }
         if (userRepository.existsByEmail(newUserRequest.getEmail())) {
-            throw new AppException("Email already exists", HttpStatus.CONFLICT);
+            throw new AppException("Пользователь с таки e-mail уже существует.", HttpStatus.CONFLICT);
         }
 
         User user = userMapper.fromNewUserRequest(newUserRequest);
@@ -63,7 +63,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new AppException("User with id=" + userId + " was not found", HttpStatus.NOT_FOUND);
+            throw new AppException("Пользователь с id=" + userId + " не найден.", HttpStatus.NOT_FOUND);
         }
         userRepository.deleteById(userId);
     }

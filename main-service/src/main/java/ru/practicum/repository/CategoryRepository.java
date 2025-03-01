@@ -5,4 +5,6 @@ import ru.practicum.model.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsByName(String name);
+
+    Category getCategoryById(Long catId);
 }

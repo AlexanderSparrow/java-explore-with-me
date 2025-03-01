@@ -22,13 +22,13 @@ public class PublicCompilationController {
             @RequestParam(required = false) Boolean pinned,
             @RequestParam(defaultValue = "0") @Min(0) int from,
             @RequestParam(defaultValue = "10") @Min(1) int size) {
-        log.info("Получение списка подборок с параметрами: pinned={}, from={}, size={}", pinned, from, size);
+        log.info("Получен запрос на получение списка подборок с параметрами: pinned={}, from={}, size={}", pinned, from, size);
         return compilationService.getCompilations(pinned, from, size);
     }
 
     @GetMapping("/{compId}")
     public CompilationDto getCompilation(@PathVariable Long compId) {
-        log.info("Получение подборки по id={}", compId);
+        log.info("Получен запрос подборки по id={}", compId);
         return compilationService.getCompilationById(compId);
     }
 }
