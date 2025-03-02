@@ -2,8 +2,10 @@ package ru.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.enums.RequestStatus;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "participation_requests")
 public class ParticipationRequest {
 
@@ -25,7 +28,8 @@ public class ParticipationRequest {
     private Long requester;
 
     @Column(nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private RequestStatus status;
 
     @Column(nullable = false)
     private LocalDateTime created;

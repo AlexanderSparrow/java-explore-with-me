@@ -2,9 +2,11 @@ package ru.practicum.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.NewEventDto;
+import ru.practicum.dto.UpdateEventUserRequest;
 import ru.practicum.model.Event;
 
 import java.util.List;
@@ -22,8 +24,15 @@ public interface EventMapper {
 
     List<EventShortDto> toEventShortDtoList(List<Event> events);
 
-    @Mapping(source = "category", target = "categoryId")
-    @Mapping(target = "initiatorId", ignore = true) // Заполняем вручную в сервисе
+    @Mapping(source = "category", target = "categoryId")  // Здесь исправление
+    @Mapping(target = "initiatorId", ignore = true)
     @Mapping(target = "state", constant = "PENDING")
     Event toEntity(NewEventDto dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "initiatorId", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    void updateEventFromDto(UpdateEventUserRequest dto, @MappingTarget Event event);
 }
+

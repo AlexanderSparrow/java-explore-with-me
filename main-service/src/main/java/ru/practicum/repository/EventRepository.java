@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-
 public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' " +
@@ -41,4 +40,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     );
 
     List<Event> findByIdIn(List<Long> eventIds);
+
+    Event findPublishedEventByIdAndInitiatorId(Long eventId, Long userId);
+
+    List<Event> findByInitiatorId(Long userId, Pageable pageable);
+
+    Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
 }

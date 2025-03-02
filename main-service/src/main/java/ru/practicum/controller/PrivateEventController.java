@@ -18,37 +18,47 @@ public class PrivateEventController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto createEvent(@PathVariable Long userId, @RequestBody NewEventDto newEventDto) {
+    public EventFullDto createEvent(@PathVariable Long userId,
+                                    @RequestBody NewEventDto newEventDto) {
         log.info("Получен запрос на создание события: {}", newEventDto);
         return privateEventService.createEvent(userId, newEventDto);
     }
 
     @PatchMapping("/{eventId}")
-    public EventFullDto updateEvent(@PathVariable Long userId, @PathVariable Long eventId, @RequestBody EventFullDto eventFullDto) {
-        log.info("Получен запрос на изменения события: {}", eventFullDto);
-        return privateEventService.updateEvent(userId, eventId, eventFullDto);
+    public EventFullDto updateEvent(@PathVariable Long userId,
+                                    @PathVariable Long eventId,
+                                    @RequestBody UpdateEventUserRequest updateRequest) {
+        log.info("Получен запрос на изменения события id: {}, данные: {}", eventId, updateRequest);
+        return privateEventService.updateEvent(userId, eventId, updateRequest);
     }
 
     @GetMapping
-    public List<EventShortDto> getUserEvents(@PathVariable Long userId, @RequestParam(defaultValue = "0") int from, @RequestParam(defaultValue = "10") int size) {
-        log.info("Получен запрос на получение событий, созданных пользователем id: {}", userId);
+    public List<EventShortDto> getUserEvents(@PathVariable Long userId,
+                                             @RequestParam(defaultValue = "0") int from,
+                                             @RequestParam(defaultValue = "10") int size) {
+        log.info("Получен запрос на получение событий, созданных пользователем id: {} начиная с {} в количестве {}",
+                userId, from, size);
         return privateEventService.getUserEvents(userId, from, size);
     }
 
     @GetMapping("/{eventId}")
-    public EventFullDto getUserEventById(@PathVariable Long userId, @PathVariable Long eventId) {
-        log.info("Получен запрос на просмотр полной информации о событии id: {}", eventId);
+    public EventFullDto getUserEventById(@PathVariable Long userId,
+                                         @PathVariable Long eventId) {
+        log.info("Получен запрос на просмотр полной информации о событии id: {} пользователем id: {}", eventId, userId);
         return privateEventService.getUserEventById(userId, eventId);
     }
 
     @GetMapping("/{eventId}/requests")
-    public List<ParticipationRequestDto> getEventRequests(@PathVariable Long userId, @PathVariable Long eventId) {
+    public List<ParticipationRequestDto> getEventRequests(@PathVariable Long userId,
+                                                          @PathVariable Long eventId) {
         log.info("Получен запрос на участии в событии id: {}", eventId);
         return privateEventService.getEventRequests(userId, eventId);
     }
 
     @PatchMapping("/{eventId}/requests")
-    public EventRequestStatusUpdateResult updateRequestStatus(@PathVariable Long userId, @PathVariable Long eventId, @RequestBody EventRequestStatusUpdateRequest request) {
+    public EventRequestStatusUpdateResult updateRequestStatus(@PathVariable Long userId,
+                                                              @PathVariable Long eventId,
+                                                              @RequestBody EventRequestStatusUpdateRequest request) {
         log.info("Получен запрос на обновление статуса запроса: {}", request);
         return privateEventService.updateRequestStatus(userId, eventId, request);
     }

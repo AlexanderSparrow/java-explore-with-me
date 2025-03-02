@@ -11,6 +11,7 @@ import ru.practicum.StatsClient;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
+import ru.practicum.enums.RequestStatus;
 import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
@@ -40,8 +41,9 @@ public class PublicEventService {
         List<Event> events = eventRepository.findPublishedEvents(
                 text != null ? text.toLowerCase() : null,
                 categories, paid, rangeStart != null ? rangeStart : LocalDateTime.now(), rangeEnd, pageable);
+
         return events.stream()
-                .filter(event -> !onlyAvailable || requestRepository.countConfirmedRequests(event.getId()) < event.getParticipantLimit())
+                .filter(event -> !onlyAvailable || requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED) < event.getParticipantLimit())
                 .map(eventMapper::toEventShortDto)
                 .collect(Collectors.toList());
     }
