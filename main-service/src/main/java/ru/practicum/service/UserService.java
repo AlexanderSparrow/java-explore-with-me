@@ -23,6 +23,10 @@ public class UserService {
 
     /**
      * Получение списка пользователей
+     *
+     * @param ids  список ID пользователей (опционально)
+     * @param from сколько пользователей пропустить в выводе (опционально)
+     * @param size количество в выводе (опционально)
      */
     @Transactional(readOnly = true)
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
@@ -42,6 +46,8 @@ public class UserService {
 
     /**
      * Регистрация нового пользователя
+     *
+     * @param newUserRequest запрос на изменение пользователя админом
      */
     @Transactional
     public UserDto registerUser(NewUserRequest newUserRequest) {
@@ -59,6 +65,8 @@ public class UserService {
 
     /**
      * Удаление пользователя
+     *
+     * @param userId ID пользователя
      */
     @Transactional
     public void deleteUser(Long userId) {
