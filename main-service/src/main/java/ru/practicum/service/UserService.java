@@ -67,4 +67,8 @@ public class UserService {
         }
         userRepository.deleteById(userId);
     }
+
+    public boolean userExists(Long userId) {
+        return userRepository.existsById(userId);
+    }
 }
