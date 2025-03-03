@@ -10,7 +10,6 @@ public class NewUserRequest {
     @NotBlank
     @NotNull
     @Pattern(regexp = "^(?!\\s*$).+", message = "Email не может состоять только из пробелов")
-
     @Size(min = 6, max = 254)
     private String email;
 
