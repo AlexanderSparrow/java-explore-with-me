@@ -1,8 +1,10 @@
 package ru.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EventFullDto;
@@ -34,6 +36,7 @@ public class AdminEventController {
      * @return Список событий по параметрам
      */
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<EventFullDto>> getEvents(
             @RequestParam(required = false) List<Long> users,
             @RequestParam(required = false) List<EventState> states,
@@ -57,9 +60,10 @@ public class AdminEventController {
      * @return Обновленное событие
      */
     @PatchMapping("/{eventId}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<EventFullDto> updateEvent(
             @PathVariable Long eventId,
-            @RequestBody UpdateEventAdminRequest updateRequest) {
+            @Valid @RequestBody UpdateEventAdminRequest updateRequest) {
         log.info("Получен запрос на изменение события с id: {} на {}", eventId, updateRequest);
         EventFullDto updatedEvent = adminEventService.updateEvent(eventId, updateRequest);
         log.info("Обновленное событие: {}", updatedEvent);

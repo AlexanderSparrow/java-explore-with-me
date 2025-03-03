@@ -36,7 +36,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             List<EventState> states,
             List<Long> categories,
             LocalDateTime rangeStart,
-            LocalDateTime rangeEnd
+            LocalDateTime rangeEnd,
+            Pageable pageable
     );
 
     List<Event> findByIdIn(List<Long> eventIds);

@@ -12,6 +12,7 @@ public class EventShortDto {
     private Long id;
 
     @NotBlank
+    @Size(min = 20, max = 2000)
     private String annotation;
 
     @NotNull

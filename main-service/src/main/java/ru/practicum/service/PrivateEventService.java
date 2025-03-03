@@ -76,7 +76,7 @@ public class PrivateEventService {
 
         if (updateRequest.getEventDate() != null && updateRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             throw new AppException("Дата и время события не могут быть раньше, чем через 2 часа от текущего момента.",
-                    HttpStatus.CONFLICT);
+                    HttpStatus.BAD_REQUEST);
         }
         eventMapper.updateEventFromDto(updateRequest, event);
         eventRepository.save(event);

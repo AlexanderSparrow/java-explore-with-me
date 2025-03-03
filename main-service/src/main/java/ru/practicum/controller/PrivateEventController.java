@@ -1,5 +1,6 @@
 package ru.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,20 +20,22 @@ public class PrivateEventController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createEvent(@PathVariable Long userId,
-                                    @RequestBody NewEventDto newEventDto) {
+                                    @Valid @RequestBody NewEventDto newEventDto) {
         log.info("Получен запрос на создание события: {}", newEventDto);
         return privateEventService.createEvent(userId, newEventDto);
     }
 
     @PatchMapping("/{eventId}")
+    @ResponseStatus(HttpStatus.OK)
     public EventFullDto updateEvent(@PathVariable Long userId,
                                     @PathVariable Long eventId,
-                                    @RequestBody UpdateEventUserRequest updateRequest) {
+                                    @Valid @RequestBody UpdateEventUserRequest updateRequest) {
         log.info("Получен запрос на изменения события id: {}, данные: {}", eventId, updateRequest);
         return privateEventService.updateEvent(userId, eventId, updateRequest);
     }
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> getUserEvents(@PathVariable Long userId,
                                              @RequestParam(defaultValue = "0") int from,
                                              @RequestParam(defaultValue = "10") int size) {
@@ -42,6 +45,7 @@ public class PrivateEventController {
     }
 
     @GetMapping("/{eventId}")
+    @ResponseStatus(HttpStatus.OK)
     public EventFullDto getUserEventById(@PathVariable Long userId,
                                          @PathVariable Long eventId) {
         log.info("Получен запрос на просмотр полной информации о событии id: {} пользователем id: {}", eventId, userId);
@@ -49,6 +53,7 @@ public class PrivateEventController {
     }
 
     @GetMapping("/{eventId}/requests")
+    @ResponseStatus(HttpStatus.OK)
     public List<ParticipationRequestDto> getEventRequests(@PathVariable Long userId,
                                                           @PathVariable Long eventId) {
         log.info("Получен запрос на участии в событии id: {}", eventId);
@@ -58,7 +63,7 @@ public class PrivateEventController {
     @PatchMapping("/{eventId}/requests")
     public EventRequestStatusUpdateResult updateRequestStatus(@PathVariable Long userId,
                                                               @PathVariable Long eventId,
-                                                              @RequestBody EventRequestStatusUpdateRequest request) {
+                                                              @Valid @RequestBody EventRequestStatusUpdateRequest request) {
         log.info("Получен запрос на обновление статуса запроса: {}", request);
         return privateEventService.updateRequestStatus(userId, eventId, request);
     }

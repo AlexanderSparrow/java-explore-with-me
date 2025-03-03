@@ -27,6 +27,7 @@ public class PublicEventController {
     private final StatsService statsService;
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<EventShortDto>> getEvents(
             @RequestParam(required = false, defaultValue = "") String text,
             @RequestParam(required = false) List<Long> categories,
@@ -59,6 +60,7 @@ public class PublicEventController {
     }
 
     @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<EventFullDto> getEvent(@PathVariable Long id, HttpServletRequest request) {
         log.info("Запрос события с идентификатором {}", id);
 

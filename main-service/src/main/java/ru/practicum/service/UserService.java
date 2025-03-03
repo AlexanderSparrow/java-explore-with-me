@@ -1,6 +1,8 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,12 +35,12 @@ public class UserService {
         if (from < 0 || size <= 0) {
             throw new AppException("Некорректные значения параметров пагинации.", HttpStatus.BAD_REQUEST);
         }
-
+        Pageable pageable = PageRequest.of(from / size, size);
         List<User> users;
         if (ids == null || ids.isEmpty()) {
-            users = userRepository.findAllWithPagination(from, size);
+            users = userRepository.findAllWithPagination(pageable);
         } else {
-            users = userRepository.findByIdIn(ids, from, size);
+            users = userRepository.findByIdIn(ids, pageable);
         }
 
         return users.stream().map(userMapper::toDto).collect(Collectors.toList());
@@ -52,7 +54,7 @@ public class UserService {
     @Transactional
     public UserDto registerUser(NewUserRequest newUserRequest) {
         if (newUserRequest.getName() == null || newUserRequest.getName().isBlank()) {
-            throw new AppException("Field: name. Error: must not be blank. Value: null", HttpStatus.BAD_REQUEST);
+            throw new AppException("Имя не может быть пустым.", HttpStatus.BAD_REQUEST);
         }
         if (userRepository.existsByEmail(newUserRequest.getEmail())) {
             throw new AppException("Пользователь с таки e-mail уже существует.", HttpStatus.CONFLICT);

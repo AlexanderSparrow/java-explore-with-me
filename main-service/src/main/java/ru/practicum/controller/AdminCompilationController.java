@@ -43,7 +43,7 @@ public class AdminCompilationController {
     @PatchMapping("/{compId}")
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto updateCompilation(@PathVariable Long compId,
-                                            @RequestBody UpdateCompilationRequest request) {
+                                            @Valid @RequestBody UpdateCompilationRequest request) {
         log.info("Получен запрос на изменение категории на: {}.", request);
         return compilationService.updateCompilation(compId, request);
     }

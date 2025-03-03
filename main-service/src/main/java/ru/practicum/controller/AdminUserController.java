@@ -21,12 +21,14 @@ public class AdminUserController {
 
     /**
      * Получение информации о пользователях
+     *
      * @param ids  Список ID пользователей (опционально)
      * @param from Количество элементов, которые нужно пропустить
      * @param size Количество элементов в ответе
      * @return Список пользователей
      */
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<UserDto> getUsers(
             @RequestParam(required = false) List<Long> ids,
             @RequestParam(defaultValue = "0") int from,
@@ -38,6 +40,7 @@ public class AdminUserController {
 
     /**
      * Добавление нового пользователя
+     *
      * @param newUserRequest Данные добавляемого пользователя
      * @return Зарегистрированный пользователь
      */
@@ -50,6 +53,7 @@ public class AdminUserController {
 
     /**
      * Удаление пользователя
+     *
      * @param userId ID пользователя
      */
     @DeleteMapping("/{userId}")
