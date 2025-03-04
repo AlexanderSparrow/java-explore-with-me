@@ -7,8 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.practicum.StatsClient;
-import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.enums.EventState;
@@ -35,7 +33,6 @@ public class AdminEventService {
     private final EventRepository eventRepository;
     private final ParticipationRequestRepository requestRepository;
     private final EventMapper eventMapper;
-    private final StatsClient statsClient;
 
     /**
      * Получение списка событий
@@ -50,11 +47,27 @@ public class AdminEventService {
      */
     public List<EventFullDto> getEvents(List<Long> users, List<EventState> states, List<Long> categories,
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        if (from < 0 || size <= 0) {
+            throw new AppException("Некорректные параметры пагинации", HttpStatus.BAD_REQUEST);
+        }
+
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("eventDate").descending());
 
-        List<Event> events = eventRepository.findByInitiatorIdInAndStateInAndCategoryIdInAndEventDateBetween(
-                users, states, categories, rangeStart, rangeEnd, pageable
-        );
+        boolean filterUsers = users != null && !users.isEmpty();
+        boolean filterStates = states != null && !states.isEmpty();
+        boolean filterCategories = categories != null && !categories.isEmpty();
+        boolean filterDates = rangeStart != null && rangeEnd != null;
+
+        List<Event> events;
+
+        if (filterUsers && filterStates && filterCategories && filterDates) {
+            events = eventRepository.findByInitiatorIdInAndStateInAndCategoryIdInAndEventDateBetween(
+                    users, states, categories, rangeStart, rangeEnd, pageable
+            );
+        } else {
+            events = eventRepository.findAll(pageable).getContent();
+
+        }
 
         return eventMapper.toEventFullDtoList(events);
     }
@@ -112,10 +125,4 @@ public class AdminEventService {
         if (Objects.nonNull(value)) setter.accept(value);
     }
 
-
-    public void trackEventView(Long eventId, String ip) {
-        EndpointHitDto hit = new EndpointHitDto("ExploreWithMe", "/events/" + eventId, ip, LocalDateTime.now());
-        log.info("Отправка статистики: {}", hit);
-        statsClient.sendHit(hit);
-    }
 }
