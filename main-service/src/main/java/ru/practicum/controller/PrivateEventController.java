@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.*;
+import ru.practicum.service.ParticipationRequestService;
 import ru.practicum.service.PrivateEventService;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 public class PrivateEventController {
 
     private final PrivateEventService privateEventService;
+    private final ParticipationRequestService participationRequestService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -57,7 +59,7 @@ public class PrivateEventController {
     public List<ParticipationRequestDto> getEventRequests(@PathVariable Long userId,
                                                           @PathVariable Long eventId) {
         log.info("Получен запрос на участии в событии id: {}", eventId);
-        return privateEventService.getEventRequests(userId, eventId);
+        return participationRequestService.getEventRequests(userId, eventId);
     }
 
     @PatchMapping("/{eventId}/requests")
@@ -65,7 +67,7 @@ public class PrivateEventController {
                                                               @PathVariable Long eventId,
                                                               @Valid @RequestBody EventRequestStatusUpdateRequest request) {
         log.info("Получен запрос на обновление статуса запроса: {}", request);
-        return privateEventService.updateRequestStatus(userId, eventId, request);
+        return participationRequestService.updateRequestStatus(userId, eventId, request);
     }
 }
 
