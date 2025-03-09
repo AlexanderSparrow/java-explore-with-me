@@ -81,4 +81,8 @@ public class UserService {
     public boolean userExists(Long userId) {
         return userRepository.existsById(userId);
     }
+
+    public User findById(Long userId) { return userRepository.findById(userId)
+            .orElseThrow(()-> new AppException("Пользователь с id=" + userId + " не найден.", HttpStatus.NOT_FOUND));
+    }
 }

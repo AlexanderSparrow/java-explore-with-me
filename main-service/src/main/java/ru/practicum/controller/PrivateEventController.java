@@ -10,6 +10,7 @@ import ru.practicum.service.ParticipationRequestService;
 import ru.practicum.service.PrivateEventService;
 
 import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/users/{userId}/events")
@@ -22,7 +23,7 @@ public class PrivateEventController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createEvent(@PathVariable Long userId,
-                                    @Valid @RequestBody NewEventDto newEventDto) {
+                                    @RequestBody @Valid NewEventDto newEventDto) {
         log.info("Получен запрос на создание события: {}", newEventDto);
         return privateEventService.createEvent(userId, newEventDto);
     }

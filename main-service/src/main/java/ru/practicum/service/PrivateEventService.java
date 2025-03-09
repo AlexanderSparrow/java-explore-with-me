@@ -47,8 +47,8 @@ public class PrivateEventService {
                 ));
 
         Event event = eventMapper.toEntity(newEventDto);
-        event.setInitiatorId(userId);
-        event.setCategoryId(category.getId());
+        event.setInitiator(userService.findById(userId));
+        event.setCategory(category);
         event.setCreatedOn(LocalDateTime.now());
         event.setState(EventState.PENDING); // Устанавливаем статус "ожидает публикации"
 
@@ -65,7 +65,7 @@ public class PrivateEventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
 
-        if (!event.getInitiatorId().equals(userId)) {
+        if (!event.getInitiator().getId().equals(userId)) {
             throw new AppException("Изменять событие может только его инициатор.", HttpStatus.FORBIDDEN);
         }
 
@@ -86,7 +86,7 @@ public class PrivateEventService {
         updateField(updateRequest.getTitle(), event::setTitle);
         updateField(updateRequest.getAnnotation(), event::setAnnotation);
         updateField(updateRequest.getDescription(), event::setDescription);
-        updateField(updateRequest.getCategory(), event::setCategoryId);
+        updateField(categoryRepository.getCategoryById(updateRequest.getCategory()), event::setCategory);
         updateField(updateRequest.getEventDate(), event::setEventDate);
         updateField(updateRequest.getLocation(), event::setLocation);
         updateField(updateRequest.getPaid(), event::setPaid);

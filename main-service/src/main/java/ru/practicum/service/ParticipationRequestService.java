@@ -43,7 +43,7 @@ public class ParticipationRequestService {
             throw new AppException("Нельзя подать заявку на участие в неопубликованном событии.", HttpStatus.CONFLICT);
         }
 
-        if (event.getInitiatorId().equals(userId)) {
+        if (event.getInitiator().getId().equals(userId)) {
             throw new AppException("Инициатор не может подать заявку на участие в своём событии.", HttpStatus.CONFLICT);
         }
 
@@ -74,7 +74,7 @@ public class ParticipationRequestService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
 
-        if (!event.getInitiatorId().equals(userId)) {
+        if (!event.getInitiator().getId().equals(userId)) {
             throw new AppException("Только инициатор может управлять заявками на участие.", HttpStatus.FORBIDDEN);
         }
 
@@ -150,7 +150,7 @@ public class ParticipationRequestService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
 
-        if (!event.getInitiatorId().equals(userId)) {
+        if (!event.getInitiator().getId().equals(userId)) {
             throw new AppException("Только инициатор события может просматривать заявки на участие.", HttpStatus.FORBIDDEN);
         }
 

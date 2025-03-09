@@ -30,6 +30,7 @@ public class NewEventDto {
     @NotNull
     private Boolean paid = false;
 
+    @NotNull
     @PositiveOrZero
     private Integer participantLimit = 0;
 

@@ -14,6 +14,7 @@ import ru.practicum.exception.AppException;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.model.Category;
 import ru.practicum.repository.CategoryRepository;
+import ru.practicum.repository.EventRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final EventRepository eventRepository;
 
     @Transactional
     public List<CategoryDto> getCategories(int from, int size) {
@@ -58,6 +60,11 @@ public class CategoryService {
         if (!categoryRepository.existsById(catId)) {
             throw new AppException("Категория id=" + catId + " не найдена.", HttpStatus.NOT_FOUND);
         }
+
+        if (eventRepository.existsByCategory_Id(catId)) {
+            throw new AppException("Нельзя удалить категорию с привязанными событиями", HttpStatus.CONFLICT);
+        }
+
         log.info("Удаляем категорию: {}", catId);
         categoryRepository.deleteById(catId);
     }

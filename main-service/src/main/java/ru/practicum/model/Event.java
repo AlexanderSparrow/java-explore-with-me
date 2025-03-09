@@ -35,11 +35,14 @@ public class Event {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
-    @Column(name = "category_id", nullable = false)
-    private Long categoryId;
+    @ManyToOne
+    //@JoinColumn(name = "category_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    @Column(name = "initiator_id", nullable = false)
-    private Long initiatorId;
+    @ManyToOne
+    @JoinColumn(name = "initiator_id", nullable = false)
+    private User initiator;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

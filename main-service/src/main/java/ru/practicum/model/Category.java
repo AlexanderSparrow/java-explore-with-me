@@ -1,11 +1,15 @@
 package ru.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
+@Setter
+@Getter
+@Builder
 @Table(name = "categories", uniqueConstraints = @UniqueConstraint(name = "uq_category_name", columnNames = "name"))
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

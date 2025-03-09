@@ -14,6 +14,7 @@ import ru.practicum.enums.StateAction;
 import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
+import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 
@@ -31,8 +32,8 @@ public class AdminEventService {
             StateAction.REJECT_EVENT, EventState.CANCELED
     ));
     private final EventRepository eventRepository;
-    private final ParticipationRequestRepository requestRepository;
     private final EventMapper eventMapper;
+    private final CategoryRepository categoryRepository;
 
     /**
      * Получение списка событий
@@ -101,7 +102,7 @@ public class AdminEventService {
         updateField(updateRequest.getTitle(), event::setTitle);
         updateField(updateRequest.getAnnotation(), event::setAnnotation);
         updateField(updateRequest.getDescription(), event::setDescription);
-        updateField(updateRequest.getCategory(), event::setCategoryId);
+        updateField(categoryRepository.getCategoryById(updateRequest.getCategory()), event::setCategory);
         updateField(updateRequest.getEventDate(), event::setEventDate);
         updateField(updateRequest.getLocation(), event::setLocation);
         updateField(updateRequest.getPaid(), event::setPaid);

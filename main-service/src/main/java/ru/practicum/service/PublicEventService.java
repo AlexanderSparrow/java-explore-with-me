@@ -90,10 +90,11 @@ public class PublicEventService {
 
                     // Подсчет одобренных заявок
                     dto.setConfirmedRequests(requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED));
-                    Category category = categoryRepository.findById(event.getCategoryId())
-                            .orElseThrow(() -> new AppException("Категория с id=" + event.getCategoryId() + " не найдена.", HttpStatus.NOT_FOUND));
-                    User initiator = userRepository.findById(event.getInitiatorId())
-                            .orElseThrow(()-> new AppException("Пользователь с id=" + event.getInitiatorId() + " не найден.", HttpStatus.NOT_FOUND));
+                    Category category = categoryRepository.findById(event.getCategory().getId())
+                            .orElseThrow(() -> new AppException("Категория с id=" + event.getCategory().getId() + " не найдена.", HttpStatus.NOT_FOUND));
+
+                    User initiator = userRepository.findById(event.getInitiator().getId())
+                            .orElseThrow(()-> new AppException("Пользователь с id=" + event.getInitiator().getId() + " не найден.", HttpStatus.NOT_FOUND));
 
                     // Установка значений
                     dto.setInitiator(userMapper.toShortDto(initiator));
