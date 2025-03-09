@@ -12,6 +12,7 @@ import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.NewEventDto;
 import ru.practicum.dto.UpdateEventUserRequest;
 import ru.practicum.enums.EventState;
+import ru.practicum.enums.UserStateAction;
 import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Category;
@@ -20,7 +21,8 @@ import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,6 +30,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PrivateEventService {
 
+    private static final Map<UserStateAction, EventState> statusMap = new HashMap<>(Map.of(
+            UserStateAction.CANCEL_REVIEW, EventState.CANCELED,
+            UserStateAction.SEND_TO_REVIEW, EventState.PENDING
+    ));
     private final EventRepository eventRepository;
     private final UserService userService;
     private final EventMapper eventMapper;
@@ -76,10 +82,27 @@ public class PrivateEventService {
             throw new AppException("Дата и время события не могут быть раньше, чем через 2 часа от текущего момента.",
                     HttpStatus.BAD_REQUEST);
         }
-        eventMapper.updateEventFromDto(updateRequest, event);
-        eventRepository.save(event);
-        return eventMapper.toEventFullDto(event);
+
+        updateField(updateRequest.getTitle(), event::setTitle);
+        updateField(updateRequest.getAnnotation(), event::setAnnotation);
+        updateField(updateRequest.getDescription(), event::setDescription);
+        updateField(updateRequest.getCategory(), event::setCategoryId);
+        updateField(updateRequest.getEventDate(), event::setEventDate);
+        updateField(updateRequest.getLocation(), event::setLocation);
+        updateField(updateRequest.getPaid(), event::setPaid);
+        updateField(updateRequest.getParticipantLimit(), event::setParticipantLimit);
+
+        log.debug("Received status: {}", updateRequest.getStatus());
+
+        event.setState(Optional.ofNullable(updateRequest.getStatus())
+                .map(statusMap::get)
+                .orElse(EventState.PENDING));
+
+        log.debug("Mapped event status: {}", event.getState());
+
+        return eventMapper.toEventFullDto(eventRepository.save(event));
     }
+
 
     public List<EventShortDto> getUserEvents(Long userId, int from, int size) {
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "createdOn"));
@@ -99,6 +122,13 @@ public class PrivateEventService {
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено или не принадлежит пользователю id=" + userId, HttpStatus.NOT_FOUND));
 
         return eventMapper.toEventFullDto(event);
+    }
+
+    /**
+     * Метод обновления полей
+     */
+    private <T> void updateField(T value, Consumer<T> setter) {
+        if (Objects.nonNull(value)) setter.accept(value);
     }
 
 }

@@ -32,7 +32,7 @@ public class PrivateEventController {
     public EventFullDto updateEvent(@PathVariable Long userId,
                                     @PathVariable Long eventId,
                                     @Valid @RequestBody UpdateEventUserRequest updateRequest) {
-        log.info("Получен запрос на изменения события id: {}, данные: {}", eventId, updateRequest);
+        log.info("Получен запрос на изменение события id: {}, данные: {}", eventId, updateRequest);
         return privateEventService.updateEvent(userId, eventId, updateRequest);
     }
 

@@ -24,7 +24,7 @@ public interface EventMapper {
 
     List<EventShortDto> toEventShortDtoList(List<Event> events);
 
-    @Mapping(source = "category", target = "categoryId")  // Здесь исправление
+    @Mapping(source = "category", target = "categoryId")
     @Mapping(target = "initiatorId", ignore = true)
     @Mapping(target = "state", constant = "PENDING")
     Event toEntity(NewEventDto dto);
