@@ -17,7 +17,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' " +
             "AND (:text IS NULL OR LOWER(e.annotation) LIKE %:text% OR LOWER(e.description) LIKE %:text%) " +
-            "AND (:categories IS NULL OR e.id IN :categories) " +
+            "AND (:categories IS NULL OR e.categoryId IN :categories) " +
             "AND (:paid IS NULL OR e.paid = :paid) " +
             "AND (e.eventDate >= :rangeStart) " +
             "AND (:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
@@ -45,6 +45,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Event findPublishedEventByIdAndInitiatorId(Long eventId, Long userId);
 
     List<Event> findByInitiatorId(Long userId, Pageable pageable);
+
+    List<Event> findByInitiatorId(Long userId);
 
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
 }

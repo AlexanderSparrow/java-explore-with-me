@@ -19,6 +19,7 @@ import ru.practicum.repository.ParticipationRequestRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -121,8 +122,13 @@ public class ParticipationRequestService {
     }
 
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
-        // Заглушка
-        return List.of();
+        if (!userService.userExists(userId)) {
+            throw new AppException("Пользователь с id=" + userId + " не найден.", HttpStatus.NOT_FOUND);
+        }
+        List<ParticipationRequest> requests = participationRequestRepository.findByRequester(userId);
+        return requests.stream()
+                .map(participationRequestMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {

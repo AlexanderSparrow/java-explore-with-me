@@ -2,9 +2,13 @@ package ru.practicum.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Setter
+@Getter
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 public class CategoryDto {
     private Long id;
 
