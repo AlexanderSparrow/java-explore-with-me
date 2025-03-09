@@ -132,8 +132,18 @@ public class ParticipationRequestService {
     }
 
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
-        // Заглушка
-        return new ParticipationRequestDto();
+        if (!userService.userExists(userId)) {
+            throw new AppException("Пользователь с id=" + userId + " не найден.", HttpStatus.NOT_FOUND);
+        }
+
+        ParticipationRequest participationRequest = participationRequestRepository.findById(requestId)
+                .orElseThrow(() -> new AppException("Запрос на участие с id=" + requestId + " не найден.", HttpStatus.NOT_FOUND));
+
+        participationRequest.setStatus(RequestStatus.CANCELED);
+
+        participationRequestRepository.save(participationRequest);
+
+        return participationRequestMapper.toDto(participationRequest);
     }
 
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
