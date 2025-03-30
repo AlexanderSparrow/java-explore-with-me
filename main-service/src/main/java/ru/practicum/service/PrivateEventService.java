@@ -92,9 +92,9 @@ public class PrivateEventService {
         updateField(updateRequest.getPaid(), event::setPaid);
         updateField(updateRequest.getParticipantLimit(), event::setParticipantLimit);
 
-        log.debug("Received status: {}", updateRequest.getStatus());
+        log.debug("Received status: {}", updateRequest.getStateAction());
 
-        event.setState(Optional.ofNullable(updateRequest.getStatus())
+        event.setState(Optional.ofNullable(updateRequest.getStateAction())
                 .map(statusMap::get)
                 .orElse(EventState.PENDING));
 

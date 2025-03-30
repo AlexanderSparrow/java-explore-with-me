@@ -17,6 +17,10 @@ import ru.practicum.service.PublicEventService;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Контроллер для управления событиями (публичная часть).
+ */
+
 @Slf4j
 @RestController
 @RequestMapping("/events")
@@ -25,6 +29,21 @@ public class PublicEventController {
 
     private final PublicEventService eventService;
     private final StatsClient statsClient;
+
+    /**
+     * Добавление получения списка событий с возможностью фильтрации.
+     *
+     * @param text          - данные для поиска по полям события.
+     * @param categories    - список идентификаторов категорий.
+     * @param paid          - отбор по критерию "платное" мероприятие.
+     * @param rangeStart    - начало периода для поиска событий.
+     * @param rangeEnd      - конец периода для поиска событий.
+     * @param from          - пропуск событий для выборки (значение по умолчанию = 0).
+     * @param size          - размер выборки (значение по умолчанию = 10).
+     * @param sort          - критерий сортировки
+     * @param onlyAvailable - отбор по критерию "только в статусе "Доступные"
+     * @return Список событий.
+     */
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -49,6 +68,9 @@ public class PublicEventController {
 
         return ResponseEntity.ok(events);
     }
+
+
+    // TODO swagger
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)

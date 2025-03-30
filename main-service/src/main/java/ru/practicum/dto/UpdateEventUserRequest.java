@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.practicum.enums.StateAction;
+import ru.practicum.enums.UserStateAction;
 
 import java.time.LocalDateTime;
 
@@ -28,7 +28,7 @@ public class UpdateEventUserRequest {
     @PositiveOrZero
     private Integer participantLimit;
 
-    private StateAction status;
+    private UserStateAction stateAction;
 
     @Size(min = 3, max = 120)
     private String title;

@@ -27,7 +27,7 @@ public class EventFullDto extends EventShortDto {
     private Location location;
 
     @PositiveOrZero
-    private int participantLimit = 0;
+    private int participantLimit;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime publishedOn;

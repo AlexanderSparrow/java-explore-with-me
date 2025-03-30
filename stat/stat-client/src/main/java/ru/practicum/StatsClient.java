@@ -40,13 +40,15 @@ public class StatsClient {
         }
     }
 
-    public List<ViewStats> getStats(String start, String end) {
-        log.info("Получение статистики с {} по {}", start, end);
+    public List<ViewStats> getStats(String start, String end, List<String> uris) {
+        log.info("Получение статистики с {} по {}, uris: {}", start, end, uris);
         try {
             return restClient.get()
                     .uri(uriBuilder -> uriBuilder.path("/stats")
                             .queryParam("start", start)
                             .queryParam("end", end)
+                            .queryParam("uris", uris != null ? uris : List.of())
+                            //.queryParamIfPresent("uris", uris != null && !uris.isEmpty() ? Optional.of(uris) : Optional.empty())
                             .build())
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {
@@ -59,4 +61,16 @@ public class StatsClient {
             return Collections.emptyList();
         }
     }
+
+   /* public ViewStats getStats(Long id) {
+        List<Long> uris = new ArrayList<>();
+        uris.add(id);
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/stats")
+                        .queryParam("uris", uris)
+                        .build())
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
+    }*/
 }

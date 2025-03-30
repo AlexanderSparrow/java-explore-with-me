@@ -7,6 +7,7 @@ import lombok.*;
 @Setter
 @Getter
 @Builder
+@ToString
 @Table(name = "categories", uniqueConstraints = @UniqueConstraint(name = "uq_category_name", columnNames = "name"))
 @NoArgsConstructor
 @AllArgsConstructor

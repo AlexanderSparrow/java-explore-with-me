@@ -14,16 +14,10 @@ import ru.practicum.dto.ViewStats;
 import ru.practicum.enums.EventSort;
 import ru.practicum.enums.RequestStatus;
 import ru.practicum.exception.AppException;
-import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.mapper.EventMapper;
-import ru.practicum.mapper.UserMapper;
-import ru.practicum.model.Category;
 import ru.practicum.model.Event;
-import ru.practicum.model.User;
-import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
-import ru.practicum.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,10 +34,6 @@ public class PublicEventService {
     private final ParticipationRequestRepository requestRepository;
     private final EventMapper eventMapper;
     private final StatsClient statsClient;
-    private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final CategoryMapper categoryMapper;
 
     public List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
@@ -67,7 +57,7 @@ public class PublicEventService {
         List<Event> events = eventRepository.findPublishedEvents(
                 text != null && !text.isBlank() ? text.toLowerCase() : null,
                 categories, paid, rangeStart, rangeEnd, pageable);
-
+        log.info("Найдено событий: {}", events.size());
         if (events.isEmpty()) {
             return Collections.emptyList();
         }
@@ -75,7 +65,13 @@ public class PublicEventService {
         // Получение просмотров из статистики
         String start = rangeStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String end = rangeEnd != null ? rangeEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "9999-12-31 23:59:59";
-        List<ViewStats> stats = statsClient.getStats(start, end);
+
+        List<String> uris = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .collect(Collectors.toList());
+
+        log.info("Список URI для статистики: {}", uris);
+        List<ViewStats> stats = statsClient.getStats(start, end, uris);
 
         return events.stream()
                 .filter(event -> !onlyAvailable || requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED) < event.getParticipantLimit())
@@ -84,21 +80,12 @@ public class PublicEventService {
 
                     // Подсчет просмотров
                     dto.setViews(stats.stream()
-                            .filter(stat -> stat.getUri().endsWith("/events/" + event.getId()))
+                            .filter(stat -> stat.getUri().matches(".*/events/" + event.getId() + "$")) // Проверяем, что URI заканчивается нужным путем
                             .mapToLong(ViewStats::getHits)
                             .sum());
 
                     // Подсчет одобренных заявок
                     dto.setConfirmedRequests(requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED));
-                    Category category = categoryRepository.findById(event.getCategory().getId())
-                            .orElseThrow(() -> new AppException("Категория с id=" + event.getCategory().getId() + " не найдена.", HttpStatus.NOT_FOUND));
-
-                    User initiator = userRepository.findById(event.getInitiator().getId())
-                            .orElseThrow(()-> new AppException("Пользователь с id=" + event.getInitiator().getId() + " не найден.", HttpStatus.NOT_FOUND));
-
-                    // Установка значений
-                    dto.setInitiator(userMapper.toShortDto(initiator));
-                    dto.setCategory((categoryMapper.toDto(category)));
 
                     return dto;
                 })
@@ -108,7 +95,14 @@ public class PublicEventService {
     public EventFullDto getPublicEventById(Long eventId) {
         Event event = eventRepository.findPublishedEventById(eventId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
-        return eventMapper.toEventFullDto(event);
+//TODO вытащить данные о просмотрах
+        EventFullDto dto = eventMapper.toEventFullDto(event);
+        long count = requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED);
+        dto.setConfirmedRequests(count);
+
+        //dto.setViews(statsClient.getStats(eventId).getHits()); //TODO
+        return dto;
+
     }
 
     private Sort getSort(EventSort sort) {
