@@ -16,7 +16,6 @@ import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
-import ru.practicum.repository.ParticipationRequestRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -113,6 +112,10 @@ public class AdminEventService {
         event.setState(Optional.ofNullable(updateRequest.getStateAction())
                 .map(statusMap::get)
                 .orElse(EventState.PENDING));
+
+        if (event.getState().equals(EventState.PUBLISHED)) {
+            event.setPublishedOn(LocalDateTime.now());
+        }
 
         log.debug("Mapped event status: {}", event.getState());
 

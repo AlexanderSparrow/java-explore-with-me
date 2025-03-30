@@ -61,8 +61,12 @@ public class ParticipationRequestService {
                 .created(LocalDateTime.now())
                 .event(event.getId())
                 .requester(userId)
-                .status(Boolean.TRUE.equals(event.getParticipantLimit() > 0) ? RequestStatus.PENDING : RequestStatus.CONFIRMED)
+                .status(Boolean.TRUE.equals(event.getRequestModeration()) ? RequestStatus.PENDING : RequestStatus.CONFIRMED)
                 .build();
+
+        if (event.getParticipantLimit() == 0) {
+            request.setStatus(RequestStatus.CONFIRMED);
+        }
 
         ParticipationRequest savedRequest = participationRequestRepository.save(request);
 

@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS events (
     paid BOOLEAN NOT NULL,
     created_on TIMESTAMP,
     published_on TIMESTAMP,
-    participant_limit INT DEFAULT 0
+    participant_limit INT DEFAULT 0,
+    request_moderation BOOLEAN DEFAULT false
     );
 
 --Таблица подборок

@@ -17,8 +17,10 @@ import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
+import ru.practicum.model.User;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
+import ru.practicum.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -38,8 +40,12 @@ public class PrivateEventService {
     private final UserService userService;
     private final EventMapper eventMapper;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException("Пользователь с id " + userId + " не найден.", HttpStatus.NOT_FOUND));
+
         Category category = categoryRepository.findById(newEventDto.getCategory())
                 .orElseThrow(() -> new AppException(
                         "Категория с id=" + newEventDto.getCategory() + " не найдена.",
@@ -47,15 +53,12 @@ public class PrivateEventService {
                 ));
 
         Event event = eventMapper.toEntity(newEventDto);
-        event.setInitiator(userService.findById(userId));
+        event.setInitiator(user);
         event.setCategory(category);
         event.setCreatedOn(LocalDateTime.now());
-        event.setState(EventState.PENDING); // Устанавливаем статус "ожидает публикации"
-
         event = eventRepository.save(event);
 
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
-        eventFullDto.setRequestModeration(newEventDto.getRequestModeration());
         log.info("Возвращаем {}", eventFullDto);
         return eventFullDto;
     }
