@@ -1,11 +1,14 @@
 package ru.practicum.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.enums.RequestStatus;
 import ru.practicum.model.ParticipationRequest;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest, Long> {
@@ -17,4 +20,8 @@ public interface ParticipationRequestRepository extends JpaRepository<Participat
     long countByEventAndStatus(Long eventId, RequestStatus status);
 
     List<ParticipationRequest> findByEvent(Long eventId);
+
+    @Query("SELECT p.event, COUNT(p) FROM ParticipationRequest p WHERE p.event IN :eventIds AND p.status = 'CONFIRMED' GROUP BY p.event")
+    Map<Long, Long> countConfirmedRequestsForEvents(@Param("eventIds") List<Long> eventIds);
+
 }

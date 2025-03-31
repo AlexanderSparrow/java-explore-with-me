@@ -10,12 +10,14 @@ import org.springframework.stereotype.Service;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.enums.EventState;
+import ru.practicum.enums.RequestStatus;
 import ru.practicum.enums.StateAction;
 import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
+import ru.practicum.repository.ParticipationRequestRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,6 +35,7 @@ public class AdminEventService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private final CategoryRepository categoryRepository;
+    private final ParticipationRequestRepository participationRequestRepository;
 
     /**
      * Получение списка событий
@@ -107,8 +110,6 @@ public class AdminEventService {
         updateField(updateRequest.getPaid(), event::setPaid);
         updateField(updateRequest.getParticipantLimit(), event::setParticipantLimit);
 
-        log.debug("Received status: {}", updateRequest.getStateAction());
-
         event.setState(Optional.ofNullable(updateRequest.getStateAction())
                 .map(statusMap::get)
                 .orElse(EventState.PENDING));
@@ -117,9 +118,9 @@ public class AdminEventService {
             event.setPublishedOn(LocalDateTime.now());
         }
 
-        log.debug("Mapped event status: {}", event.getState());
-
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        eventFullDto.setConfirmedRequests(participationRequestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED));
+        return eventFullDto;
     }
 
     /**

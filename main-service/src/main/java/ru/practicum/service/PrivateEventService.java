@@ -12,6 +12,7 @@ import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.NewEventDto;
 import ru.practicum.dto.UpdateEventUserRequest;
 import ru.practicum.enums.EventState;
+import ru.practicum.enums.RequestStatus;
 import ru.practicum.enums.UserStateAction;
 import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
@@ -20,6 +21,7 @@ import ru.practicum.model.Event;
 import ru.practicum.model.User;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
+import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -41,6 +43,7 @@ public class PrivateEventService {
     private final EventMapper eventMapper;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ParticipationRequestRepository participationRequestRepository;
 
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         User user = userRepository.findById(userId)
@@ -95,15 +98,13 @@ public class PrivateEventService {
         updateField(updateRequest.getPaid(), event::setPaid);
         updateField(updateRequest.getParticipantLimit(), event::setParticipantLimit);
 
-        log.debug("Received status: {}", updateRequest.getStateAction());
-
         event.setState(Optional.ofNullable(updateRequest.getStateAction())
                 .map(statusMap::get)
                 .orElse(EventState.PENDING));
 
-        log.debug("Mapped event status: {}", event.getState());
-
-        return eventMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
+        eventFullDto.setConfirmedRequests(participationRequestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED));
+        return eventFullDto;
     }
 
 
@@ -114,17 +115,25 @@ public class PrivateEventService {
         }
 
         List<Event> events = eventRepository.findByInitiatorId(userId, pageable);
+        List<Long> eventsIds = events.stream().map(Event::getId).toList();
+
+        Map<Long, Long> confirmedRequestsMap = participationRequestRepository.countConfirmedRequestsForEvents(eventsIds);
 
         return events.stream()
-                .map(eventMapper::toEventShortDto)
+                .map(event -> {
+                    EventShortDto dto = eventMapper.toEventShortDto(event);
+                    dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
     public EventFullDto getUserEventById(Long userId, Long eventId) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено или не принадлежит пользователю id=" + userId, HttpStatus.NOT_FOUND));
-
-        return eventMapper.toEventFullDto(event);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
+        eventFullDto.setConfirmedRequests(participationRequestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED)); //TODO
+        return eventFullDto;
     }
 
     /**
