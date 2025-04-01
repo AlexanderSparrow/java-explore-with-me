@@ -117,7 +117,12 @@ public class PrivateEventService {
         List<Event> events = eventRepository.findByInitiatorId(userId, pageable);
         List<Long> eventsIds = events.stream().map(Event::getId).toList();
 
-        Map<Long, Long> confirmedRequestsMap = participationRequestRepository.countConfirmedRequestsForEvents(eventsIds);
+        List<Object[]> results = participationRequestRepository.countConfirmedRequestsForEvents(eventsIds);
+        Map<Long, Long> confirmedRequestsMap = results.stream()
+                .collect(Collectors.toMap(
+                        result -> (Long) result[0], // Первый элемент — ID события
+                        result -> (Long) result[1]  // Второй элемент — количество подтверждённых заявок
+                ));
 
         return events.stream()
                 .map(event -> {

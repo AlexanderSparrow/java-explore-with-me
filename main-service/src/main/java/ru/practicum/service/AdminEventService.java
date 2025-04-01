@@ -22,6 +22,7 @@ import ru.practicum.repository.ParticipationRequestRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -48,7 +49,7 @@ public class AdminEventService {
      * @param from       сколько событий пропустить в выводе (опционально)
      * @param size       количество в выводе (опционально)
      */
-    public List<EventFullDto> getEvents(List<Long> users, List<EventState> states, List<Long> categories,
+     public List<EventFullDto> getEvents(List<Long> users, List<EventState> states, List<Long> categories,
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         if (from < 0 || size <= 0) {
             throw new AppException("Некорректные параметры пагинации", HttpStatus.BAD_REQUEST);
@@ -56,23 +57,36 @@ public class AdminEventService {
 
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("eventDate").descending());
 
-        boolean filterUsers = users != null && !users.isEmpty();
+        boolean filterUsers = users != null && !users.isEmpty() && !(users.size() == 1 && users.getFirst() == 0);
         boolean filterStates = states != null && !states.isEmpty();
-        boolean filterCategories = categories != null && !categories.isEmpty();
-        boolean filterDates = rangeStart != null && rangeEnd != null;
+        boolean filterCategories = categories != null && !categories.isEmpty() && !(categories.size() == 1 && categories.getFirst() == 0);
+        boolean filterDates = rangeStart != null && rangeEnd != null && rangeStart.isBefore(rangeEnd);
 
-        List<Event> events;
+        List<Event> events = eventRepository.findWithFilters(
+                filterUsers ? users : null,
+                filterStates ? states : null,
+                filterCategories ? categories : null,
+                filterDates ? rangeStart : null,
+                filterDates ? rangeEnd : null,
+                pageable
+        );
 
-        if (filterUsers && filterStates && filterCategories && filterDates) {
-            events = eventRepository.findByInitiatorIdInAndStateInAndCategoryIdInAndEventDateBetween(
-                    users, states, categories, rangeStart, rangeEnd, pageable
-            );
-        } else {
-            events = eventRepository.findAll(pageable).getContent();
+        List<Long> eventsIds = events.stream().map(Event::getId).toList();
 
-        }
+        List<Object[]> results = participationRequestRepository.countConfirmedRequestsForEvents(eventsIds);
+        Map<Long, Long> confirmedRequestsMap = results.stream()
+                .collect(Collectors.toMap(
+                        result -> (Long) result[0], // Первый элемент — ID события
+                        result -> (Long) result[1]  // Второй элемент — количество подтверждённых заявок
+                ));
 
-        return eventMapper.toEventFullDtoList(events);
+        return events.stream()
+                .map(event -> {
+                    EventFullDto dto = eventMapper.toEventFullDto(event);
+                    dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
