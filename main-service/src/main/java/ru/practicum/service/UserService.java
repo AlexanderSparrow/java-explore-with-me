@@ -82,7 +82,8 @@ public class UserService {
         return userRepository.existsById(userId);
     }
 
-    public User findById(Long userId) { return userRepository.findById(userId)
-            .orElseThrow(()-> new AppException("Пользователь с id=" + userId + " не найден.", HttpStatus.NOT_FOUND));
+    public User findById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new AppException("Пользователь с id=" + userId + " не найден.", HttpStatus.NOT_FOUND));
     }
 }

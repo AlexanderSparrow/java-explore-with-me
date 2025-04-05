@@ -12,4 +12,5 @@ public interface CompilationMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "events", ignore = true) // События загружаем вручную в сервисе
-    Compilation toEntity(NewCompilationDto dto);}
+    Compilation toEntity(NewCompilationDto dto);
+}
