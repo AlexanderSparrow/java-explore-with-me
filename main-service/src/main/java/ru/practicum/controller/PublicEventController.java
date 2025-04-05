@@ -62,9 +62,9 @@ public class PublicEventController {
         log.info("Запрос публичных событий: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}, onlyAvailable={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
-        List<EventShortDto> events = eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-
         statsClient.sendHit(new EndpointHitDto("ExploreWithMe", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
+
+        List<EventShortDto> events = eventService.getPublicEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
         return ResponseEntity.ok(events);
     }
@@ -77,9 +77,9 @@ public class PublicEventController {
     public ResponseEntity<EventFullDto> getEvent(@PathVariable Long id, HttpServletRequest request) {
         log.info("Запрос события с идентификатором {}", id);
 
-        EventFullDto event = eventService.getPublicEventById(id);
-
         statsClient.sendHit(new EndpointHitDto("ExploreWithMe", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
+
+        EventFullDto event = eventService.getPublicEventById(id);
 
         return ResponseEntity.ok(event);
     }

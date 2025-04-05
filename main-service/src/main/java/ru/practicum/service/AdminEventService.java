@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import ru.practicum.StatsClient;
 import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.UpdateEventAdminRequest;
 import ru.practicum.enums.EventState;
@@ -37,6 +38,7 @@ public class AdminEventService {
     private final EventMapper eventMapper;
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestRepository participationRequestRepository;
+    private final StatsClient statsClient;
 
     /**
      * Получение списка событий
@@ -84,6 +86,7 @@ public class AdminEventService {
                 .map(event -> {
                     EventFullDto dto = eventMapper.toEventFullDto(event);
                     dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
+                    dto.setViews(statsClient.getStats(event.getId()));
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -132,9 +135,10 @@ public class AdminEventService {
             event.setPublishedOn(LocalDateTime.now());
         }
 
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(eventRepository.save(event));
-        eventFullDto.setConfirmedRequests(participationRequestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED));
-        return eventFullDto;
+        EventFullDto dto = eventMapper.toEventFullDto(eventRepository.save(event));
+        dto.setConfirmedRequests(participationRequestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED));
+        dto.setViews(statsClient.getStats(event.getId()));
+        return dto;
     }
 
     /**

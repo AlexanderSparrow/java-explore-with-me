@@ -71,7 +71,7 @@ public class PublicEventService {
                 .collect(Collectors.toList());
 
         log.info("Список URI для статистики: {}", uris);
-        List<ViewStats> stats = statsClient.getStats(start, end, uris);
+        List<ViewStats> stats = statsClient.getStats(start, end, uris, false);
 
         return events.stream()
                 .filter(event -> !onlyAvailable || requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED) < event.getParticipantLimit())
@@ -95,12 +95,12 @@ public class PublicEventService {
     public EventFullDto getPublicEventById(Long eventId) {
         Event event = eventRepository.findPublishedEventById(eventId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
-//TODO вытащить данные о просмотрах
+
         EventFullDto dto = eventMapper.toEventFullDto(event);
         long count = requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED);
         dto.setConfirmedRequests(count);
 
-        //dto.setViews(statsClient.getStats(eventId).getHits()); //TODO
+        dto.setViews(statsClient.getStats(eventId));
         return dto;
 
     }

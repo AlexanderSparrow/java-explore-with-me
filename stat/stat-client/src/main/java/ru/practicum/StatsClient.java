@@ -40,7 +40,7 @@ public class StatsClient {
         }
     }
 
-    public List<ViewStats> getStats(String start, String end, List<String> uris) {
+    public List<ViewStats> getStats(String start, String end, List<String> uris, boolean unique) {
         log.info("Получение статистики с {} по {}, uris: {}", start, end, uris);
         try {
             return restClient.get()
@@ -49,6 +49,7 @@ public class StatsClient {
                             .queryParam("end", end)
                             .queryParam("uris", uris != null ? uris : List.of())
                             //.queryParamIfPresent("uris", uris != null && !uris.isEmpty() ? Optional.of(uris) : Optional.empty())
+                            .queryParam("unique", unique)
                             .build())
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {
@@ -62,15 +63,24 @@ public class StatsClient {
         }
     }
 
-   /* public ViewStats getStats(Long id) {
-        List<Long> uris = new ArrayList<>();
-        uris.add(id);
-        return restClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/stats")
-                        .queryParam("uris", uris)
-                        .build())
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
-    }*/
+    public Long getStats(Long eventId) {
+        if (eventId == null) {
+            throw new IllegalArgumentException("eventId не может быть null");
+        }
+        String uri = "/events/" + eventId;
+        List<String> uris = List.of(uri);
+
+        List<ViewStats> stats = getStats(
+                "2000-01-01 00:00:00",
+                "2100-01-01 00:00:00",
+                uris,
+                true
+        );
+
+        if (!stats.isEmpty()) {
+            return stats.getFirst().getHits();
+        } else {
+            return 0L;
+        }
+    }
 }

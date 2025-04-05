@@ -11,7 +11,6 @@ import ru.practicum.dto.ViewStats;
 import ru.practicum.service.StatsService;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -29,16 +28,14 @@ public class StatsController {
 
     @GetMapping("/stats")
     public List<ViewStats> getStats(
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") String start,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") String end,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) {
         log.info("Получен запрос статистики по посещениям.");
         log.info("Запрос: start = {}, end = {}, uris = {}, unique = {}", start, end, uris, unique);
-        LocalDateTime startDateTime = LocalDateTime.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        LocalDateTime endDateTime = LocalDateTime.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        return statsService.getStats(startDateTime, endDateTime, uris, unique);
+        return statsService.getStats(start, end, uris, unique);
     }
 
 }
