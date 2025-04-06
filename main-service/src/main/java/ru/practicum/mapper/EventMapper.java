@@ -22,8 +22,7 @@ public interface EventMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "state", constant = "PENDING")
-    @Mapping(source = "category", target = "category", qualifiedByName = "mapCategory")
-        // Переводим Long → Category
+    @Mapping(source = "category", target = "category", qualifiedByName = "mapCategory") // Переводим Long → Category
     Event toEntity(NewEventDto dto);
 
     // Методы преобразования Long → Category / Long → User

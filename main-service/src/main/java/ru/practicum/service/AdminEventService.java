@@ -121,7 +121,13 @@ public class AdminEventService {
         updateField(updateRequest.getTitle(), event::setTitle);
         updateField(updateRequest.getAnnotation(), event::setAnnotation);
         updateField(updateRequest.getDescription(), event::setDescription);
-        updateField(categoryRepository.getCategoryById(updateRequest.getCategory()), event::setCategory);
+
+        if (updateRequest.getCategory() != null) {
+            var category = categoryRepository.getCategoryById(updateRequest.getCategory());
+            if (category == null) throw new AppException("Категория не найдена", HttpStatus.NOT_FOUND);
+            event.setCategory(category);
+        }
+
         updateField(updateRequest.getEventDate(), event::setEventDate);
         updateField(updateRequest.getLocation(), event::setLocation);
         updateField(updateRequest.getPaid(), event::setPaid);
