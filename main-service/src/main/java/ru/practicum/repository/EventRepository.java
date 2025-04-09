@@ -1,10 +1,13 @@
 package ru.practicum.repository;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import ru.practicum.enums.EventState;
 import ru.practicum.model.Event;
 
@@ -13,20 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long> {
-
-    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' " +
-            "AND (:text IS NULL OR LOWER(e.annotation) LIKE %:text% OR LOWER(e.description) LIKE %:text%) " +
-            "AND (:categories IS NULL OR e.category.id IN :categories) " +
-            "AND (:paid IS NULL OR e.paid = :paid) " +
-            "AND (e.eventDate >= :rangeStart) " +
-            "AND (:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
-    List<Event> findPublishedEvents(@Param("text") String text,
-                                    @Param("categories") List<Long> categories,
-                                    @Param("paid") Boolean paid,
-                                    @Param("rangeStart") LocalDateTime rangeStart,
-                                    @Param("rangeEnd") LocalDateTime rangeEnd,
-                                    Pageable pageable);
+public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
 
     @Query("SELECT e FROM Event e WHERE e.id = :eventId AND e.state = 'PUBLISHED'")
     Optional<Event> findPublishedEventById(@Param("eventId") Long eventId);
@@ -52,16 +42,66 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     boolean existsByCategory_Id(Long catId);
 
-    @Query("SELECT e FROM Event e WHERE (:users IS NULL OR e.initiator.id IN :users) " +
-            "AND (:states IS NULL OR e.state IN :states) " +
-            "AND (:categories IS NULL OR e.category.id IN :categories) " +
-            "AND (:rangeStart IS NULL OR e.eventDate >= :rangeStart) " +
-            "AND (:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
-    List<Event> findWithFilters(@Param("users") List<Long> users,
-                                @Param("states") List<EventState> states,
-                                @Param("categories") List<Long> categories,
-                                @Param("rangeStart") LocalDateTime rangeStart,
-                                @Param("rangeEnd") LocalDateTime rangeEnd,
-                                Pageable pageable);
+    default List<Event> findWithFilters(List<Long> users,
+                                        List<EventState> states,
+                                        List<Long> categories,
+                                        LocalDateTime rangeStart,
+                                        LocalDateTime rangeEnd,
+                                        Boolean paid,
+                                        String text,
+                                        Pageable pageable) {
+        var predicates = Specification.allOf(Specs.after(rangeStart),
+                Specs.states(states),
+                Specs.before(rangeEnd),
+                Specs.categories(categories),
+                Specs.paid(paid),
+                Specs.text(text),
+                Specs.users(users));
+        return findAll(predicates, pageable).getContent();
+    }
 
+    class Specs {
+        static Specification<Event> users(List<Long> users) {
+            return CollectionUtils.isEmpty(users) ? null :
+                    (entity, query, cb)
+                            -> entity.get("initiator").get("id").in(users);
+        }
+
+        static Specification<Event> states(List<EventState> states) {
+            return CollectionUtils.isEmpty(states) ? null :
+                    (entity, query, cb)
+                            -> entity.get("state").in(states);
+        }
+
+        static Specification<Event> categories(List<Long> categories) {
+            return CollectionUtils.isEmpty(categories) ? null :
+                    (entity, query, cb)
+                            -> entity.get("category").get("id").in(categories);
+        }
+
+        static Specification<Event> after(LocalDateTime rangeStart) {
+            return rangeStart == null ? null :
+                    (entity, query, cb)
+                            -> cb.greaterThanOrEqualTo(entity.get("eventDate"), rangeStart);
+        }
+
+        static Specification<Event> before(LocalDateTime rangeEnd) {
+            return rangeEnd == null ? null :
+                    (entity, query, cb)
+                            -> cb.lessThanOrEqualTo(entity.get("eventDate"), rangeEnd);
+        }
+
+        static Specification<Event> text(String text) {
+            return text == null ? null :
+                    (entity, query, cb)
+                            -> cb.or(cb.like(cb.lower(entity.get("annotation")), "%" + text.toLowerCase() + "%"),
+                            cb.like(cb.lower(entity.get("description")), "%" + text + "%"));
+        }
+
+        static Specification<Event> paid(Boolean paid) {
+            return paid == null ? null :
+                    (entity, query, cb)
+                            -> cb.equal(entity.get("paid"), paid);
+        }
+    }
 }

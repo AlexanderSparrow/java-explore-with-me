@@ -51,7 +51,7 @@ public class AdminEventService {
      * @param from       сколько событий пропустить в выводе (опционально)
      * @param size       количество в выводе (опционально)
      */
-     public List<EventFullDto> getEvents(List<Long> users, List<EventState> states, List<Long> categories,
+    public List<EventFullDto> getEvents(List<Long> users, List<EventState> states, List<Long> categories,
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         if (from < 0 || size <= 0) {
             throw new AppException("Некорректные параметры пагинации", HttpStatus.BAD_REQUEST);
@@ -70,6 +70,8 @@ public class AdminEventService {
                 filterCategories ? categories : null,
                 filterDates ? rangeStart : null,
                 filterDates ? rangeEnd : null,
+                null,
+                null,
                 pageable
         );
 

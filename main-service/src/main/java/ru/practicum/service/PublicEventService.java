@@ -2,6 +2,7 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -12,6 +13,7 @@ import ru.practicum.dto.EventFullDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.ViewStats;
 import ru.practicum.enums.EventSort;
+import ru.practicum.enums.EventState;
 import ru.practicum.enums.RequestStatus;
 import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
@@ -54,9 +56,10 @@ public class PublicEventService {
 
         Pageable pageable = PageRequest.of(from / size, size, getSort(sort));
 
-        List<Event> events = eventRepository.findPublishedEvents(
-                text != null && !text.isBlank() ? text.toLowerCase() : null,
-                categories, paid, rangeStart, rangeEnd, pageable);
+        List<Event> events = eventRepository.findWithFilters(null, List.of(EventState.PUBLISHED),
+                categories, rangeStart, rangeEnd, paid,
+                !StringUtils.isEmpty(text) ? text : null,
+                pageable);
         log.info("Найдено событий: {}", events.size());
         if (events.isEmpty()) {
             return Collections.emptyList();
