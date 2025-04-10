@@ -9,8 +9,9 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStats;
+import ru.practicum.dto.ViewsStatsRequest;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -40,47 +41,28 @@ public class StatsClient {
         }
     }
 
-    public List<ViewStats> getStats(String start, String end, List<String> uris, boolean unique) {
-        log.info("Получение статистики с {} по {}, uris: {}", start, end, uris);
-        try {
-            return restClient.get()
-                    .uri(uriBuilder -> uriBuilder.path("/stats")
-                            .queryParam("start", start)
-                            .queryParam("end", end)
-                            .queryParam("uris", uris != null ? uris : List.of())
-                            //.queryParamIfPresent("uris", uris != null && !uris.isEmpty() ? Optional.of(uris) : Optional.empty())
-                            .queryParam("unique", unique)
-                            .build())
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<>() {
-                    });
-        } catch (HttpStatusCodeException e) {
-            log.error("Ошибка получения статистики: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-            return Collections.emptyList();
-        } catch (Exception e) {
-            log.error("Ошибка при запросе статистики: {}", e.getMessage(), e);
-            return Collections.emptyList();
+    public List<ViewStats> getStats(List<ViewsStatsRequest> requests) {
+        List<ViewStats> allStats = new ArrayList<>();
+        for (ViewsStatsRequest req : requests) {
+            try {
+                List<ViewStats> stats = restClient.get()
+                        .uri(uriBuilder -> uriBuilder.path("/stats")
+                                .queryParam("start", req.getStart())
+                                .queryParam("end", req.getEnd())
+                                .queryParam("uris", req.getUri())
+                                .queryParam("unique", req.isUnique())
+                                .build())
+                        .retrieve()
+                        .body(new ParameterizedTypeReference<>() {
+                        });
+                assert stats != null;
+                allStats.addAll(stats);
+            } catch (HttpStatusCodeException e) {
+                log.error("Ошибка получения статистики: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            } catch (Exception e) {
+                log.error("Ошибка при запросе статистики: {}", e.getMessage(), e);
+            }
         }
-    }
-
-    public Long getStats(Long eventId) {
-        if (eventId == null) {
-            throw new IllegalArgumentException("eventId не может быть null");
-        }
-        String uri = "/events/" + eventId;
-        List<String> uris = List.of(uri);
-
-        List<ViewStats> stats = getStats(
-                "2000-01-01 00:00:00",
-                "2100-01-01 00:00:00",
-                uris,
-                true
-        );
-
-        if (!stats.isEmpty()) {
-            return stats.getFirst().getHits();
-        } else {
-            return 0L;
-        }
+        return allStats;
     }
 }

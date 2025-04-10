@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.exception.AppException;
-import ru.practicum.model.ApiError;
+import ru.practicum.dto.ApiError;
 
 import java.time.LocalDateTime;
 import java.util.*;

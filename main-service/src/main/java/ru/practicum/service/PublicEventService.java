@@ -9,9 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatsClient;
-import ru.practicum.dto.EventFullDto;
-import ru.practicum.dto.EventShortDto;
-import ru.practicum.dto.ViewStats;
+import ru.practicum.dto.*;
 import ru.practicum.enums.EventSort;
 import ru.practicum.enums.EventState;
 import ru.practicum.enums.RequestStatus;
@@ -22,9 +20,7 @@ import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,7 +45,6 @@ public class PublicEventService {
             throw new AppException("Ошибка: начальная дата не может быть позже конечной.", HttpStatus.BAD_REQUEST);
         }
 
-        // Если диапазон дат не задан, ищем события, которые произойдут позже текущего момента
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
@@ -58,38 +53,45 @@ public class PublicEventService {
 
         List<Event> events = eventRepository.findWithFilters(null, List.of(EventState.PUBLISHED),
                 categories, rangeStart, rangeEnd, paid,
-                !StringUtils.isEmpty(text) ? text : null,
+                StringUtils.isNotBlank(text) ? text : null,
                 pageable);
+
         log.info("Найдено событий: {}", events.size());
         if (events.isEmpty()) {
-            return Collections.emptyList();
+            return List.of();
         }
 
-        // Получение просмотров из статистики
-        String start = rangeStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String end = rangeEnd != null ? rangeEnd.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "9999-12-31 23:59:59";
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
 
-        List<String> uris = events.stream()
-                .map(event -> "/events/" + event.getId())
-                .collect(Collectors.toList());
+        Map<Long, Long> confirmedRequests = requestRepository.countConfirmedRequestsForEvents(eventIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
 
-        log.info("Список URI для статистики: {}", uris);
-        List<ViewStats> stats = statsClient.getStats(start, end, uris, false);
+        Map<String, Event> uriToEventMap = events.stream()
+                .collect(Collectors.toMap(e -> "/events/" + e.getId(), e -> e));
+
+        List<ViewsStatsRequest> statsRequests = uriToEventMap.entrySet().stream()
+                .map(entry -> ViewsStatsRequest.builder()
+                        .uri(entry.getKey())
+                        .start(entry.getValue().getPublishedOn())
+                        .end(LocalDateTime.now())
+                        .unique(true)
+                        .build())
+                .toList();
+
+        List<ViewStats> stats = statsClient.getStats(statsRequests);
+
+        Map<String, Long> viewsMap = stats.stream()
+                .collect(Collectors.toMap(ViewStats::getUri, ViewStats::getHits));
 
         return events.stream()
-                .filter(event -> !onlyAvailable || requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED) < event.getParticipantLimit())
+                .filter(event -> !onlyAvailable || confirmedRequests.getOrDefault(event.getId(), 0L) < event.getParticipantLimit())
                 .map(event -> {
                     EventShortDto dto = eventMapper.toEventShortDto(event);
-
-                    // Подсчет просмотров
-                    dto.setViews(stats.stream()
-                            .filter(stat -> stat.getUri().matches(".*/events/" + event.getId() + "$")) // Проверяем, что URI заканчивается нужным путем
-                            .mapToLong(ViewStats::getHits)
-                            .sum());
-
-                    // Подсчет одобренных заявок
-                    dto.setConfirmedRequests(requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED));
-
+                    dto.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L));
+                    dto.setViews(viewsMap.getOrDefault("/events/" + event.getId(), 0L));
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -100,12 +102,19 @@ public class PublicEventService {
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
 
         EventFullDto dto = eventMapper.toEventFullDto(event);
-        long count = requestRepository.countByEventAndStatus(event.getId(), RequestStatus.CONFIRMED);
-        dto.setConfirmedRequests(count);
+        dto.setConfirmedRequests(requestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED));
 
-        dto.setViews(statsClient.getStats(eventId));
+        ViewsStatsRequest statsRequest = ViewsStatsRequest.builder()
+                .uri("/events/" + eventId)
+                .start(event.getPublishedOn())
+                .end(LocalDateTime.now())
+                .unique(false)
+                .build();
+
+        List<ViewStats> stats = statsClient.getStats(List.of(statsRequest));
+        dto.setViews(stats.isEmpty() ? 0L : stats.getFirst().getHits());
+
         return dto;
-
     }
 
     private Sort getSort(EventSort sort) {
