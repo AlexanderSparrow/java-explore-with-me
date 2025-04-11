@@ -25,7 +25,9 @@ public class Compilation {
 
     boolean pinned;
 
+    @Column(name = "title", unique = true)
     String title;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "compilations_events",
             joinColumns = @JoinColumn(name = "compilation_id"),
