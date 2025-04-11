@@ -70,14 +70,7 @@ public class AdminEventService {
 
         if (events.isEmpty()) return List.of();
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-
-        Map<Long, Long> confirmedRequestsMap = participationRequestRepository
-                .countConfirmedRequestsForEvents(eventIds).stream()
-                .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> (Long) row[1]
-                ));
+        Map<Long, Long> confirmedRequestsMap = getconfirmedRequestsMap(events);
 
         Map<String, Event> uriToEventMap = events.stream()
                 .filter(e -> e.getPublishedOn() != null)
@@ -104,6 +97,18 @@ public class AdminEventService {
                     dto.setViews(viewsMap.getOrDefault("/events/" + event.getId(), 0L));
                     return dto;
                 }).collect(Collectors.toList());
+    }
+
+    private Map<Long, Long> getconfirmedRequestsMap(List<Event> events) {
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+
+        Map<Long, Long> map = participationRequestRepository
+                .countConfirmedRequestsForEvents(eventIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+        return map;
     }
 
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest) {

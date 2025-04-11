@@ -23,9 +23,13 @@ import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static ru.practicum.service.EventFullDtoCreator.feelViewsField;
 
 @Slf4j
 @Service
@@ -119,31 +123,20 @@ public class PrivateEventService {
         List<Event> events = eventRepository.findByInitiatorId(userId, pageable);
         if (events.isEmpty()) return List.of();
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-
         // Подсчёт подтверждённых заявок
-        Map<Long, Long> confirmedRequestsMap = participationRequestRepository
-                .countConfirmedRequestsForEvents(eventIds).stream()
-                .collect(Collectors.toMap(
-                        row -> (Long) row[0],
-                        row -> (Long) row[1]
-                ));
+        Map<Long, Long> confirmedRequestsMap = getconfirmedRequestsMap(events);
 
         // Подготовка URI -> ID и дат
         Map<String, Event> uriToEventMap = events.stream()
                 .collect(Collectors.toMap(e -> "/events/" + e.getId(), e -> e));
 
         // Запрос статистики
-        List<ViewStats> stats = statsClient.getStats(
-                uriToEventMap.entrySet().stream()
-                        .map(entry -> ViewsStatsRequest.builder()
-                                .uri(entry.getKey())
-                                .start(entry.getValue().getPublishedOn())
-                                .end(LocalDateTime.now())
-                                .unique(true)
-                                .build())
-                        .toList()
-        );
+        ViewsStatsRequest statsRequest = ViewsStatsRequest.builder()
+                .uris(uriToEventMap.keySet())
+                .unique(true)
+                .build();
+
+        List<ViewStats> stats = statsClient.getStats(List.of(statsRequest));
 
         Map<String, Long> viewsMap = stats.stream()
                 .collect(Collectors.toMap(ViewStats::getUri, ViewStats::getHits));
@@ -161,20 +154,19 @@ public class PrivateEventService {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено или не принадлежит пользователю id=" + userId, HttpStatus.NOT_FOUND));
 
-        EventFullDto dto = eventMapper.toEventFullDto(event);
-        dto.setConfirmedRequests(participationRequestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED));
+        return feelViewsField(eventId, event, eventMapper, participationRequestRepository, statsClient);
+    }
 
-        ViewsStatsRequest statsRequest = ViewsStatsRequest.builder()
-                .uri("/events/" + eventId)
-                .start(event.getPublishedOn())
-                .end(LocalDateTime.now())
-                .unique(true)
-                .build();
+    private Map<Long, Long> getconfirmedRequestsMap(List<Event> events) {
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
 
-        List<ViewStats> stats = statsClient.getStats(List.of(statsRequest));
-        dto.setViews(stats.isEmpty() ? 0L : stats.getFirst().getHits());
-
-        return dto;
+        Map<Long, Long> map = participationRequestRepository
+                .countConfirmedRequestsForEvents(eventIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+        return map;
     }
 
     private <T> void updateField(T value, Consumer<T> setter) {

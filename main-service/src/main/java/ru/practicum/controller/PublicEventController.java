@@ -77,7 +77,7 @@ public class PublicEventController {
     public ResponseEntity<EventFullDto> getEvent(@PathVariable Long id, HttpServletRequest request) {
         log.info("Запрос события с идентификатором {}", id);
 
-        statsClient.sendHit(new EndpointHitDto("ExploreWithMe", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
+        statsClient.sendHit(new EndpointHitDto("${SPRING_APPLICATION_NAME}", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
 
         EventFullDto event = eventService.getPublicEventById(id);
 

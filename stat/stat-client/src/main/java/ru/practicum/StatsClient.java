@@ -11,6 +11,7 @@ import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStats;
 import ru.practicum.dto.ViewsStatsRequest;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import java.util.List;
 @Component
 public class StatsClient {
     private final RestClient restClient;
+    private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public StatsClient(@Value("${stat-service.url}") String statsServiceUrl) {
         this.restClient = RestClient.builder()
@@ -47,9 +49,9 @@ public class StatsClient {
             try {
                 List<ViewStats> stats = restClient.get()
                         .uri(uriBuilder -> uriBuilder.path("/stats")
-                                .queryParam("start", req.getStart())
-                                .queryParam("end", req.getEnd())
-                                .queryParam("uris", req.getUri())
+                                .queryParam("start", DTF.format(req.getStart()))
+                                .queryParam("end", DTF.format(req.getEnd()))
+                                .queryParam("uris", req.getUris())
                                 .queryParam("unique", req.isUnique())
                                 .build())
                         .retrieve()

@@ -12,7 +12,6 @@ import ru.practicum.StatsClient;
 import ru.practicum.dto.*;
 import ru.practicum.enums.EventSort;
 import ru.practicum.enums.EventState;
-import ru.practicum.enums.RequestStatus;
 import ru.practicum.exception.AppException;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
@@ -22,6 +21,8 @@ import ru.practicum.repository.ParticipationRequestRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static ru.practicum.service.EventFullDtoCreator.feelViewsField;
 
 @Slf4j
 @Service
@@ -72,16 +73,13 @@ public class PublicEventService {
         Map<String, Event> uriToEventMap = events.stream()
                 .collect(Collectors.toMap(e -> "/events/" + e.getId(), e -> e));
 
-        List<ViewsStatsRequest> statsRequests = uriToEventMap.entrySet().stream()
-                .map(entry -> ViewsStatsRequest.builder()
-                        .uri(entry.getKey())
-                        .start(entry.getValue().getPublishedOn())
-                        .end(LocalDateTime.now())
-                        .unique(true)
-                        .build())
-                .toList();
+        // Запрос статистики
+        ViewsStatsRequest statsRequest = ViewsStatsRequest.builder()
+                .uris(uriToEventMap.keySet())
+                .unique(true)
+                .build();
 
-        List<ViewStats> stats = statsClient.getStats(statsRequests);
+        List<ViewStats> stats = statsClient.getStats(List.of(statsRequest));
 
         Map<String, Long> viewsMap = stats.stream()
                 .collect(Collectors.toMap(ViewStats::getUri, ViewStats::getHits));
@@ -101,20 +99,7 @@ public class PublicEventService {
         Event event = eventRepository.findPublishedEventById(eventId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
 
-        EventFullDto dto = eventMapper.toEventFullDto(event);
-        dto.setConfirmedRequests(requestRepository.countByEventAndStatus(eventId, RequestStatus.CONFIRMED));
-
-        ViewsStatsRequest statsRequest = ViewsStatsRequest.builder()
-                .uri("/events/" + eventId)
-                .start(event.getPublishedOn())
-                .end(LocalDateTime.now())
-                .unique(false)
-                .build();
-
-        List<ViewStats> stats = statsClient.getStats(List.of(statsRequest));
-        dto.setViews(stats.isEmpty() ? 0L : stats.getFirst().getHits());
-
-        return dto;
+        return feelViewsField(eventId, event, eventMapper, requestRepository, statsClient);
     }
 
     private Sort getSort(EventSort sort) {

@@ -2,6 +2,7 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,13 +48,16 @@ public class CategoryService {
 
     @Transactional
     public CategoryDto addCategory(NewCategoryDto dto) {
-        if (categoryRepository.existsByName(dto.getName())) {
-            throw new AppException("Название категории должно быть уникальным.", HttpStatus.CONFLICT);
-        }
         Category category = categoryMapper.toCategory(dto);
         log.info("Сохраняем категорию: {}", category);
-        return categoryMapper.toDto(categoryRepository.save(category));
+        try {
+            return categoryMapper.toDto(categoryRepository.save(category));
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Ошибка при сохранении категории — дубликат имени: {}", dto.getName());
+            throw new AppException("Название категории должно быть уникальным.", HttpStatus.CONFLICT);
+        }
     }
+
 
     @Transactional
     public void deleteCategory(Long catId) {

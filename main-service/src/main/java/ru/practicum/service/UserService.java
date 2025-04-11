@@ -38,7 +38,7 @@ public class UserService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<User> users;
         if (ids == null || ids.isEmpty()) {
-            users = userRepository.findAllWithPagination(pageable);
+            users = userRepository.findAll(pageable).toList();
         } else {
             users = userRepository.findByIdIn(ids, pageable);
         }
@@ -53,9 +53,6 @@ public class UserService {
      */
     @Transactional
     public UserDto registerUser(NewUserRequest newUserRequest) {
-        if (newUserRequest.getName() == null || newUserRequest.getName().isBlank()) {
-            throw new AppException("Имя не может быть пустым.", HttpStatus.BAD_REQUEST);
-        }
         if (userRepository.existsByEmail(newUserRequest.getEmail())) {
             throw new AppException("Пользователь с таки e-mail уже существует.", HttpStatus.CONFLICT);
         }
@@ -82,8 +79,4 @@ public class UserService {
         return userRepository.existsById(userId);
     }
 
-    public User findById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new AppException("Пользователь с id=" + userId + " не найден.", HttpStatus.NOT_FOUND));
-    }
 }
