@@ -34,7 +34,7 @@ public class AdminCommentService {
         comment.setText(commentRequestDto.getText());
         comment.setUpdated(LocalDateTime.now());
 
-        return commentMapper.toDto(comment);
+        return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Transactional
