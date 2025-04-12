@@ -22,10 +22,10 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CommentService {
+public class PrivateCommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
+    final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final CommentMapper commentMapper;
 

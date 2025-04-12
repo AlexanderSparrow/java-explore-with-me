@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.CommentRequestDto;
 import ru.practicum.dto.CommentResponseDto;
-import ru.practicum.service.CommentService;
+import ru.practicum.service.PrivateCommentService;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PrivateCommentController {
 
-    private final CommentService commentService;
+    private final PrivateCommentService privateCommentService;
 
     /**
      * Добавить комментарий
@@ -26,13 +26,13 @@ public class PrivateCommentController {
      * @param commentRequestDto - содержание комментария
      * @return новый комментарий
      */
-    @GetMapping("/events/{eventId}/comments")
+    @PostMapping("/events/{eventId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentResponseDto createRequest(@PathVariable Long userId,
+    public CommentResponseDto createComment(@PathVariable Long userId,
                                             @PathVariable Long eventId,
                                             @RequestBody CommentRequestDto commentRequestDto) {
         log.info("POST /users/{}/events/{}/comments - создаём комментарий: {}", userId, eventId, commentRequestDto);
-        return commentService.createComment(userId, eventId, commentRequestDto);
+        return privateCommentService.createComment(userId, eventId, commentRequestDto);
     }
 
     /**
@@ -46,7 +46,7 @@ public class PrivateCommentController {
     public List<CommentResponseDto> getEventComments(@PathVariable Long userId,
                                                      @PathVariable Long eventId) {
         log.info("GET /users/{}/events/{}/comments - получаем комментарии", userId, eventId);
-        return commentService.getEventComments(eventId);
+        return privateCommentService.getEventComments(eventId);
     }
 
     /**
@@ -65,7 +65,7 @@ public class PrivateCommentController {
                                             @PathVariable Long commentId,
                                             @RequestBody CommentRequestDto commentRequestDto) {
         log.info("PATCH /users/{}/events/{}/comments/{} - обновляем комментарий: {}", userId, eventId, commentId, commentRequestDto);
-        return commentService.updateComment(userId, commentId, commentRequestDto);
+        return privateCommentService.updateComment(userId, commentId, commentRequestDto);
     }
 
     /**
@@ -81,7 +81,7 @@ public class PrivateCommentController {
                               @PathVariable Long eventId,
                               @PathVariable Long commentId) {
         log.info("DELETE /users/{}/events/{}/comments/{} - удаляем комментарий", userId, eventId, commentId);
-        commentService.deleteComment(userId, commentId);
+        privateCommentService.deleteComment(userId, commentId);
     }
 
     /**
@@ -98,7 +98,7 @@ public class PrivateCommentController {
                                          @PathVariable Long eventId,
                                          @PathVariable Long commentId) {
         log.info("GET /users/{}/events/{}/comments/{} - просмотр комментария", userId, eventId, commentId);
-        return commentService.getComment(userId, commentId);
+        return privateCommentService.getComment(userId, commentId);
     }
 
 
@@ -112,6 +112,6 @@ public class PrivateCommentController {
     @ResponseStatus(HttpStatus.OK)
     public List<CommentResponseDto> getUserComments(@PathVariable Long userId) {
         log.info("GET /users/{}/comments - просмотр комментария", userId);
-        return commentService.getUserComment(userId);
+        return privateCommentService.getUserComment(userId);
     }
 }
