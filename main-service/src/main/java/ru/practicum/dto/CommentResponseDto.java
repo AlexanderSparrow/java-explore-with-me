@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.model.Event;
-import ru.practicum.model.User;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +14,8 @@ import java.time.LocalDateTime;
 public class CommentResponseDto {
     private Long id;
     private String text;
-    private Event event;
-    private User author;
+    private EventFullDto event;
+    private UserShortDto author;
     private LocalDateTime created;
+    private LocalDateTime updated;
 }
