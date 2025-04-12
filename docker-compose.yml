@@ -6,6 +6,8 @@ services:
     container_name: stats-db-container
     ports:
       - "9542:5432"
+    depends_on:
+      - ewm-db
     environment:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_USER=stats_admin
@@ -24,6 +26,7 @@ services:
     container_name: stat-service-container
     ports:
       - "9090:9090"
+      - "9001:9001"
     depends_on:
       stats-db:
         condition: service_healthy
@@ -56,6 +59,7 @@ services:
     container_name: ewm-service-container
     ports:
       - "8080:8080"
+      - "8001:8001"
     depends_on:
       ewm-db:
         condition: service_healthy
