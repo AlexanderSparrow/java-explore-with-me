@@ -14,10 +14,10 @@ import ru.practicum.exception.AppException;
 import ru.practicum.mapper.CommentMapper;
 import ru.practicum.model.Comment;
 import ru.practicum.repository.CommentRepository;
-import ru.practicum.repository.EventRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -55,9 +55,9 @@ public class AdminCommentService {
             throw new AppException("Некорректные параметры пагинации.", HttpStatus.BAD_REQUEST);
         }
 
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("eventDate").descending());
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("created").descending());
 
-        boolean filterText = text != null && !text.isBlank() && text.equals("0");
+        boolean filterText = text != null && !text.isBlank() || Objects.equals(text, "0");
         boolean filterUsers = usersIds != null && !usersIds.isEmpty() && !(usersIds.size() == 1 && usersIds.getFirst() == 0);
         boolean filterEvents = eventsIds != null && !eventsIds.isEmpty() && !(eventsIds.size() == 1 && eventsIds.getFirst() == 0);
         boolean filterComments = commentsIds != null && !commentsIds.isEmpty() && !(commentsIds.size() == 1 && commentsIds.getFirst() == 0);
