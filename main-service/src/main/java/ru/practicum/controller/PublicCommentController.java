@@ -25,7 +25,7 @@ public class PublicCommentController {
     @GetMapping("/events/{eventId}/comments")
     @ResponseStatus(HttpStatus.OK)
     public List<CommentResponseDto> getEventComments(@PathVariable Long eventId) {
-        log.info("GET /events/{}/comments - получаем комментарии", eventId);
+        log.info("GET /events/{}/comments - получаем комментарии к событию", eventId);
         return publicCommentService.getEventComments(eventId);
     }
 
@@ -35,10 +35,10 @@ public class PublicCommentController {
      * @param commentId - идентификатор комментария
      * @return Обновленный - комментарий
      */
-    @GetMapping("/events/{eventId}/comments/{commentId}")
+    @GetMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.OK)
     public CommentResponseDto getComment(@PathVariable Long commentId) {
-        log.info("GET /comments/{} - просмотр комментария", commentId);
+        log.info("GET /comments/{} - просмотр конкретного комментария", commentId);
         return publicCommentService.getComment(commentId);
     }
 }
