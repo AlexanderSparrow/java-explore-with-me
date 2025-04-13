@@ -13,8 +13,10 @@ import ru.practicum.dto.*;
 import ru.practicum.enums.EventSort;
 import ru.practicum.enums.EventState;
 import ru.practicum.exception.AppException;
+import ru.practicum.mapper.CommentMapper;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Event;
+import ru.practicum.repository.CommentRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 
@@ -33,6 +35,8 @@ public class PublicEventService {
     private final ParticipationRequestRepository requestRepository;
     private final EventMapper eventMapper;
     private final StatsClient statsClient;
+    private final CommentMapper commentMapper;
+    private final CommentRepository commentRepository;
 
     public List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd,
@@ -99,7 +103,7 @@ public class PublicEventService {
         Event event = eventRepository.findPublishedEventById(eventId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено.", HttpStatus.NOT_FOUND));
 
-        return feelViewsField(eventId, event, eventMapper, requestRepository, statsClient);
+        return feelViewsField(eventId, event, commentMapper, commentRepository, eventMapper, requestRepository, statsClient);
     }
 
     private Sort getSort(EventSort sort) {
