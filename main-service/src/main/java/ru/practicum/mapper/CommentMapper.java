@@ -21,7 +21,7 @@ public interface CommentMapper {
 
     // Методы преобразования Long → User
     @Named("mapUser")
-    default User user (Long id) {
+    default User user(Long id) {
         return id == null ? null : User.builder().id(id).build();
     }
 }
