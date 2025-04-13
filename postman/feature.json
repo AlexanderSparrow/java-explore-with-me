@@ -340,7 +340,7 @@
 											"    pm.expect(response).to.have.property('created');",
 											"});",
 											"pm.test('Response matches created comment', () => {",
-											"    pm.expect(response.id).to.equal(pm.collectionVariables.get('commentId'));",
+											"    pm.expect(response.id).to.equal(Number(pm.collectionVariables.get('commentId')));",
 											"    pm.expect(response.event.category).to.exist;",
 											"    pm.expect(response.author.name).to.be.a('string');",
 											"});"
@@ -447,7 +447,7 @@
 											"    pm.expect(response).to.have.property('updated');",
 											"});",
 											"pm.test('Response matches updated comment', () => {",
-											"    pm.expect(response.id).to.equal(pm.collectionVariables.get('commentId'));",
+											"    pm.expect(response.id).to.equal(Number(pm.collectionVariables.get('commentId')));",
 											"    pm.expect(response.text).to.equal(JSON.parse(pm.request.body.raw).text);",
 											"    pm.expect(response.updated).to.exist;",
 											"});"
@@ -755,7 +755,7 @@
 											"    pm.expect(response).to.have.property('updated');",
 											"});",
 											"pm.test('Response matches updated comment', () => {",
-											"    pm.expect(response.id).to.equal(pm.collectionVariables.get('commentId'));",
+											"    pm.expect(response.id).to.equal(Number(pm.collectionVariables.get('commentId')));",
 											"    pm.expect(response.text).to.equal(JSON.parse(pm.request.body.raw).text);",
 											"    pm.expect(response.updated).to.exist;",
 											"});"
@@ -1010,7 +1010,7 @@
 											"    pm.expect(response).to.have.property('created');",
 											"});",
 											"pm.test('Response matches created comment', () => {",
-											"    pm.expect(response.id).to.equal(pm.collectionVariables.get('commentId'));",
+											"    pm.expect(response.id).to.equal(Number(pm.collectionVariables.get('commentId')));",
 											"    pm.expect(response.event.category).to.exist;",
 											"    pm.expect(response.author.name).to.be.a('string');",
 											"});"
