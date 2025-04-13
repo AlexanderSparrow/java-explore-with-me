@@ -72,9 +72,9 @@ public class AdminCommentController {
 
      * @param commentId - идентификатор комментария
      */
-    @DeleteMapping("/admin/comments/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(Long commentId) {
+    public void deleteComment(@PathVariable Long commentId) {
         log.info("DELETE /admin/comments/{} - удаляем комментарий", commentId);
         adminCommentService.deleteComment(commentId);
     }
