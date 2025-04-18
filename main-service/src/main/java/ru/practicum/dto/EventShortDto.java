@@ -38,6 +38,5 @@ public class EventShortDto {
     @PositiveOrZero
     private long views;
 
-    @PositiveOrZero
     private List<CommentEventResponseDto> comments;
 }
