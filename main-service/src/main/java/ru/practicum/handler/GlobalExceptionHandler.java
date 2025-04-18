@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
-import ru.practicum.exception.AppException;
 import ru.practicum.dto.ApiError;
+import ru.practicum.exception.AppException;
 
 import java.time.LocalDateTime;
 import java.util.*;

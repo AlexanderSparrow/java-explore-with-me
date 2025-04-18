@@ -36,7 +36,6 @@ public class Event {
     private LocalDateTime eventDate;
 
     @ManyToOne
-    //@JoinColumn(name = "category_id", nullable = false, insertable = false, updatable = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 

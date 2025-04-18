@@ -13,14 +13,12 @@ import ru.practicum.enums.EventState;
 import ru.practicum.enums.RequestStatus;
 import ru.practicum.enums.UserStateAction;
 import ru.practicum.exception.AppException;
+import ru.practicum.mapper.CommentMapper;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.User;
-import ru.practicum.repository.CategoryRepository;
-import ru.practicum.repository.EventRepository;
-import ru.practicum.repository.ParticipationRequestRepository;
-import ru.practicum.repository.UserRepository;
+import ru.practicum.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +46,8 @@ public class PrivateEventService {
     private final UserRepository userRepository;
     private final ParticipationRequestRepository participationRequestRepository;
     private final StatsClient statsClient;
+    private final CommentMapper commentMapper;
+    private final CommentRepository commentRepository;
 
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         User user = userRepository.findById(userId)
@@ -62,7 +62,10 @@ public class PrivateEventService {
         event.setCreatedOn(LocalDateTime.now());
 
         event = eventRepository.save(event);
-        return eventMapper.toEventFullDto(event);
+        EventFullDto dto = eventMapper.toEventFullDto(event);
+        List<CommentEventResponseDto> commentsDto = (commentMapper.toCommentEventResponseDto(commentRepository.findAllByEvent_Id(event.getId())));
+        dto.setComments(commentsDto);
+        return dto;
     }
 
     public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest updateRequest) {
@@ -146,6 +149,8 @@ public class PrivateEventService {
                     EventShortDto dto = eventMapper.toEventShortDto(event);
                     dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
                     dto.setViews(viewsMap.getOrDefault("/events/" + event.getId(), 0L));
+                    List<CommentEventResponseDto> commentsDto = (commentMapper.toCommentEventResponseDto(commentRepository.findAllByEvent_Id(event.getId())));
+                    dto.setComments(commentsDto);
                     return dto;
                 }).collect(Collectors.toList());
     }
@@ -154,7 +159,7 @@ public class PrivateEventService {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new AppException("Событие с id=" + eventId + " не найдено или не принадлежит пользователю id=" + userId, HttpStatus.NOT_FOUND));
 
-        return feelViewsField(eventId, event, eventMapper, participationRequestRepository, statsClient);
+        return feelViewsField(eventId, event, commentMapper, commentRepository, eventMapper, participationRequestRepository, statsClient);
     }
 
     private Map<Long, Long> getconfirmedRequestsMap(List<Event> events) {
