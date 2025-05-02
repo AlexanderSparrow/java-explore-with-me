@@ -40,7 +40,7 @@
 
 ## Диаграмма базы данных
 
-![ewmAndStatsSchema.png](assets/ewmAndStatsSchema.png)![Схема базы данных Filmorate](/assets/![ewmAndStatsSchema.png](assets/ewmAndStatsSchema.png).png)
+![ewmAndStatsSchema.png](assets/ewmAndStatsSchema.png)
 
 ## Спецификации API:
 - спецификация основного сервиса:[ewm-main-service-spec.json](ewm-main-service-spec.json);
