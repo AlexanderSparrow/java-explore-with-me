@@ -12,7 +12,7 @@
 работа с пользователями, событиями, запросами на участия в событиях и комментариями. Существует 3 уровня доступа: публичный, приватный, админский.
 
 ## Стек технологий
-Java 21, Spring Boot, Lombok, Hibernate, PostgreSQL, H2Database, REST API, Maven, JUnit, Swagger
+Java 21, Spring Boot, Lombok, Hibernate, PostgreSQL, H2Database, REST API, Maven, JUnit, Swagger UI, MapStruct
 
 ## Спецификации API:
 - спецификация основного сервиса:[ewm-main-service-spec.json](ewm-main-service-spec.json)
